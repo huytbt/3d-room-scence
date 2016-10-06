@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "pretest": "eslint .",
-    "test": "istanbul cover _mocha -- --compilers js:babel-register test",
+    "test": "istanbul cover _mocha -- --compilers js:babel-register test && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "posttest": "gulp build",
     "build": "gulp build",
     "watch": "gulp watch",
@@ -36,6 +36,7 @@
     "browser-sync": "^2.17.0",
     "browserify": "^13.1.0",
     "chai": "^3.5.0",
+    "coveralls": "^2.11.14",
     "eslint": "^3.7.1",
     "gulp": "^3.9.1",
     "gulp-uglify": "^2.0.0",
