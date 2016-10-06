@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "pretest": "eslint .",
-    "test": "istanbul cover _mocha -- --compilers js:babel-core/register test",
+    "test": "istanbul cover _mocha -- --compilers js:babel-register test",
     "posttest": "gulp build",
     "build": "gulp build",
     "watch": "gulp watch",
