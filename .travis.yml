@@ -5,7 +5,8 @@ node_js:
   - "5"
   - "4"
 
-before_script:
+install:
   - npm install -g gulp
+  - npm install
 script: 
   - npm test
