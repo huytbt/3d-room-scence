@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint .",
-    "pretest": "eslint . && gulp build",
-    "test": "mocha test",
+    "pretest": "eslint .",
+    "test": "mocha --compilers js:babel-core/register test",
+    "posttest": "gulp build",
     "build": "gulp build",
     "watch": "gulp watch",
     "serve": "gulp serve"

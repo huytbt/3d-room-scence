@@ -1,7 +1,4 @@
-require('../dist');
-
-var a = new global.Chicken.Room();
-console.log(a);
+// var Chicken = require('../src');
 
 describe('Hello', () => {
   it('test');
