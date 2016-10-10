@@ -33,7 +33,9 @@
   "plugins": [
     "react"
   ],
-  "globals": {},
+  "globals": {
+    "expect": true
+  },
   "rules": {
     "no-empty": 0,
     "no-console": 0,
