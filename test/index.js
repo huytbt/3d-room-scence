@@ -1,12 +1,11 @@
-let chai = require('chai');
-let Chicken = require('../src');
+import App from '../components/app';
+import expect from 'expect';
+import React from 'react';
+import TestUtils from 'react-addons-test-utils';
 
-chai.should();
-
-describe('Hello', () => {
-  it('test', () => {
-    let a = new Chicken.Room();
-    a.cameraPosition.x = 10;
-    a.cameraPosition.x.should.equal(10);
+describe('App', () => {
+  it('renders without problems', () => {
+    const app = TestUtils.renderIntoDocument(<App/>);
+    expect(app).toExist();
   });
 });
