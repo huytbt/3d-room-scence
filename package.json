@@ -2,15 +2,16 @@
   "name": "three-d-room-scence-webpack-react",
   "version": "1.0.0",
   "description": "3D Room Scence Webpack React",
-  "main": "index.js",
+  "main": "main/index.js",
   "directories": {
-    "example": "example"
+    "main": "main"
   },
   "dependencies": {
     "react": "^15.3.2",
     "react-dom": "^15.3.2"
   },
   "devDependencies": {
+    "babel-cli": "^6.16.0",
     "babel-core": "^6.17.0",
     "babel-eslint": "^7.0.0",
     "babel-loader": "^6.2.5",
@@ -30,7 +31,7 @@
     "pretest": "eslint .",
     "test": "jest",
     "start": "webpack-dev-server --progress --inline --color --hot",
-    "build": "webpack"
+    "build": "babel ./modules --out-dir ./main"
   },
   "repository": {
     "type": "git",
