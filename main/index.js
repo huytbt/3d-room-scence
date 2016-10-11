@@ -11,4 +11,4 @@ var _Example3 = _interopRequireDefault(_Example2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.Example = _Example3.default;
+exports.Example = _Example3.default; /* eslint-disable */
