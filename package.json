@@ -1,7 +1,7 @@
 {
-  "name": "three-d-room-scence-webpack-react",
+  "name": "react-3d-room-scence",
   "version": "1.0.0",
-  "description": "3D Room Scence Webpack React",
+  "description": "React 3D Room Scence",
   "main": "main/index.js",
   "directories": {
     "main": "main"
@@ -23,7 +23,6 @@
     "babel-preset-stage-0": "^6.16.0",
     "babel-register": "^6.16.3",
     "chai": "^3.5.0",
-    "cross-env": "^3.1.2",
     "enzyme": "^2.4.1",
     "eslint": "^3.7.1",
     "eslint-plugin-react": "^6.4.0",
@@ -38,11 +37,11 @@
     "pretest": "eslint .",
     "test": "mocha test/.setup.js test/**/*-test.js",
     "start": "webpack-dev-server --progress --inline --color --hot",
-    "build": "rimraf main && cross-env BABEL_ENV=cjs babel ./components -d main"
+    "build": "rimraf main && babel ./components -d main"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/huytbt/3d-room-scence-webpack-react.git"
+    "url": "git+https://github.com/huytbt/react-3d-room-scence.git"
   },
   "keywords": [
     "3d",
@@ -59,7 +58,7 @@
   "author": "Huy T.",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/huytbt/3d-room-scence-webpack-react/issues"
+    "url": "https://github.com/huytbt/react-3d-room-scence/issues"
   },
-  "homepage": "https://github.com/huytbt/3d-room-scence-webpack-react#readme"
+  "homepage": "https://github.com/huytbt/react-3d-room-scence#readme"
 }
