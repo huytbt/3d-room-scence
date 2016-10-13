@@ -1,3 +1,5 @@
-/* eslint-disable */
+import RoomScene from './RoomScene';
 
-export Example from './Example';
+export {
+  RoomScene
+};
