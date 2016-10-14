@@ -10,6 +10,14 @@ const tiles = [
   }
 ];
 
+const backgroundTiles = [
+  {
+    image: '/asserts/images/tile_242.jpg',
+    width: 800,
+    height: 800
+  }
+];
+
 const roomScene = {
   camera: {
     lookat: {x:0.0, y:3.1, z:34.0},
@@ -19,29 +27,44 @@ const roomScene = {
     fov: 14
   },
   walls: [
+    // back wall
     {
-      position: {x:-2020, y:0, z:7200},
-      direction: 'z',
-      width: 3520,
+      position: {x:-1010, y:0, z:5200},
+      plan: 'z',
+      direction: {
+        x: 'rl',
+        y: 'bt'
+      },
+      width: 2000,
       height: 1700,
       ratio: 1/100,
       tiles
     },
+    // right wall
     {
-      position: {x:1260, y:0, z:7200},
-      direction: 'x',
-      width: 4200,
+      position: {x:990, y:0, z:2700},
+      plan: 'x',
+      direction: {
+        x: 'rl',
+        y: 'bt'
+      },
+      width: 2500,
       height: 1700,
       ratio: 1/100,
       tiles
     },
+    // background
     {
-      position: {x:-2000, y:0, z:7200},
-      direction: 'y',
-      width: 3500,
-      height: 6200,
+      position: {x:-1010, y:0, z:5200},
+      plan: 'y',
+      direction: {
+        x: 'rl',
+        y: 'tb'
+      },
+      width: 2000,
+      height: 3000,
       ratio: 1/100,
-      tiles
+      tiles//: backgroundTiles
     }
   ],
   layerImages: [
@@ -50,7 +73,7 @@ const roomScene = {
       opacity: 0.5,
       top: 0,
       left: 0,
-      width: 1800,
+      width: 1600,
       height: 900
     },
     {
@@ -58,7 +81,7 @@ const roomScene = {
       opacity: 1,
       top: 0,
       left: 0,
-      width: 1800,
+      width: 1600,
       height: 900
     }
   ]

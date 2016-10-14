@@ -66,7 +66,7 @@ class RoomScene extends Component {
 
   loadWalls() {
     this.props.walls.map((element) => {
-      const wall = new Wall(element.position, element.direction,
+      const wall = new Wall(element.position, element.plan, element.direction,
         element.width, element.height, element.ratio, element.tiles, 0);
       this.walls.push(wall);
     });
