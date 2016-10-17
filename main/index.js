@@ -3,12 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Example = undefined;
+exports.RoomScene = undefined;
 
-var _Example2 = require('./Example');
+var _RoomScene = require('./RoomScene');
 
-var _Example3 = _interopRequireDefault(_Example2);
+var _RoomScene2 = _interopRequireDefault(_RoomScene);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.Example = _Example3.default; /* eslint-disable */
+exports.RoomScene = _RoomScene2.default;
