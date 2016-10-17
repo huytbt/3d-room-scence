@@ -22,12 +22,6 @@ export default class Object3D {
         break;
       case 'y':
         points = [
-
-          // {x: 0*this.width + this.position.x, z: 1*(0*this.height + this.position.z), y: this.position.y}, // bottom - left
-          // {x: 0*this.width + this.position.x, z: 1*(1*this.height + this.position.z), y: this.position.y}, // top - left
-          // {x: 1*this.width + this.position.x, z: 1*(1*this.height + this.position.z), y: this.position.y}, // top - right
-          // {x: 1*this.width + this.position.x, z: 1*(0*this.height + this.position.z), y: this.position.y}  // bottom - right
-
           {x: 0*this.width + this.position.x, z: -1*(0*this.height - this.position.z), y: this.position.y}, // bottom - left
           {x: 0*this.width + this.position.x, z: -1*(1*this.height - this.position.z), y: this.position.y}, // top - left
           {x: 1*this.width + this.position.x, z: -1*(1*this.height - this.position.z), y: this.position.y}, // top - right

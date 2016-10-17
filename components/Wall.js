@@ -3,39 +3,45 @@ import Tile from './Tile';
 import {Phoria} from 'phoria.js';
 
 class Wall extends Object3D {
-  constructor(position, plan, direction, width, height, ratio, tiles, selectedTile) {
+  constructor(position, plan, direction, width, height, ratio, tiles, options) {
     super(width, height, ratio);
     this.position = position;
     this.direction = direction;
     this.plan = plan;
     this.tiles = tiles || [];
-    this.selectedTile = selectedTile;
+    this.options = options || {
+      selectedTile: null
+    };
 
     this.position.x *= this.ratio;
     this.position.y *= this.ratio;
     this.position.z *= this.ratio;
+
+    this.mountedTiles = [];
   }
 
   mount() {
-    const tiles = [];
+    if (this.options.selectedTile === null) {
+      return [];
+    }
 
-    const tile = this.tiles[this.selectedTile];
+    const tile = this.tiles[this.options.selectedTile];
     tile.plan = this.plan;
 
     let startPoint = this.points[3];
     switch (this.plan) {
       case 'x':
-        this.pushTile(tiles, tile, 'z', 'y');
+        this.pushTile(this.mountedTiles, tile, 'z', 'y');
         break;
       case 'y':
-        this.pushTile(tiles, tile, 'x', 'z');
+        this.pushTile(this.mountedTiles, tile, 'x', 'z');
         break;
       case 'z':
-        this.pushTile(tiles, tile, 'x', 'y');
+        this.pushTile(this.mountedTiles, tile, 'x', 'y');
         break;
     }
 
-    return tiles;
+    return this.mountedTiles;
   }
 
   pushTile(tiles, tile, x, y) {
@@ -44,7 +50,7 @@ class Wall extends Object3D {
     this.pushTileVertical(tile, startPoint, y, () => {
       this.pushTileHorizontal(tile, startPoint, x, () => {
         tile.position = startPoint;
-        tiles.push(tile.mount());
+        tiles.push(tile.mount(this.options));
       });
     });
   }

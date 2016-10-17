@@ -7,6 +7,16 @@ const tiles = [
     image: '/asserts/images/tile_149.jpg',
     width: 960,
     height: 976
+  },
+  {
+    image: '/asserts/images/tile_1.jpg',
+    width: 240,
+    height: 240
+  },
+  {
+    image: '/asserts/images/tile_2.jpg',
+    width: 600,
+    height: 400
   }
 ];
 
@@ -15,6 +25,16 @@ const backgroundTiles = [
     image: '/asserts/images/tile_242.jpg',
     width: 800,
     height: 800
+  },
+  {
+    image: '/asserts/images/tile_1.jpg',
+    width: 240,
+    height: 240
+  },
+  {
+    image: '/asserts/images/tile_2.jpg',
+    width: 600,
+    height: 400
   }
 ];
 
@@ -38,20 +58,27 @@ const roomScene = {
       width: 2000,
       height: 1700,
       ratio: 1/100,
-      tiles
+      tiles,
+      options: {
+        selectedTile: null
+      }
     },
     // right wall
     {
-      position: {x:990, y:0, z:2700},
+      position: {x:990, y:0, z:1200},
       plan: 'x',
       direction: {
         x: 'rl',
         y: 'bt'
       },
-      width: 2500,
+      width: 4000,
       height: 1700,
       ratio: 1/100,
-      tiles
+      tiles,
+      options: {
+        flipTile: true,
+        selectedTile: null
+      }
     },
     // background
     {
@@ -62,9 +89,9 @@ const roomScene = {
         y: 'tb'
       },
       width: 2000,
-      height: 3000,
+      height: 4000,
       ratio: 1/100,
-      tiles//: backgroundTiles
+      tiles: backgroundTiles
     }
   ],
   layerImages: [

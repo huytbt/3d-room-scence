@@ -34,26 +34,13 @@ class RoomScene extends Component {
     this.scene.perspective.fov = this.props.perspective.fov || 14;
     this.scene.viewport.width = this.width;
     this.scene.viewport.height = this.height;
-
-    const plane = Phoria.Util.generateTesselatedPlane(200,200,0,120);
-    this.scene.graph.push(Phoria.Entity.create({
-      points: plane.points,
-      edges: plane.edges,
-      polygons: plane.polygons,
-      style: {
-        shademode: "plain",
-        drawmode: "wireframe",
-        linewidth: 0.25,
-        objectsortmode: "back"
-      }
-    }));
   }
 
   renderScene() {
     this.walls.map((wall) => {
-      const objects = wall.mount();
-      objects.map((obj) => {
-        this.scene.graph.push(obj);
+      wall.mount();
+      wall.mountedTiles.map((tile) => {
+        this.scene.graph.push(tile);
       });
     });
     this.scene.modelView();
@@ -64,10 +51,17 @@ class RoomScene extends Component {
     });
   }
 
+  changeWallTile(wallIndex, tileIndex) {
+    this.walls[wallIndex].mountedTiles = [];
+    this.walls[wallIndex].options.selectedTile = tileIndex;
+    this.scene.graph = [];
+    this.renderScene();
+  }
+
   loadWalls() {
     this.props.walls.map((element) => {
       const wall = new Wall(element.position, element.plan, element.direction,
-        element.width, element.height, element.ratio, element.tiles, 0);
+        element.width, element.height, element.ratio, element.tiles, element.options);
       this.walls.push(wall);
     });
   }
@@ -111,6 +105,10 @@ class RoomScene extends Component {
 
   get height() {
     return this.width / (16/9);
+  }
+
+  handleChangeWallTile(wallIndex, tileIndex, e) {
+    this.changeWallTile(wallIndex, tileIndex);
   }
 
   render() {

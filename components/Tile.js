@@ -7,10 +7,18 @@ class Tile extends Object3D {
     this.texture = texture;
   }
 
-  mount() {
+  mount(options) {
+    let vertices = [1,2,3,0];
+    if (this.plan === 'y') {
+      vertices = [3,0,1,2];
+    }
+    if (options.flipTile) {
+      this.swap(vertices, 0, 1);
+      this.swap(vertices, 2, 3);
+    }
     const tile = Phoria.Entity.create({
       points: this.points,
-      polygons: [{vertices:[0,1,2,3]}],
+      polygons: [{vertices}],
       style: {
         shademode: 'plain',
         opacity: 1,
@@ -22,6 +30,12 @@ class Tile extends Object3D {
     tile.polygons[0].texture = 0;
 
     return tile;
+  }
+
+  swap(object, a, b) {
+    const x = object[a];
+    object[a] = object[b];
+    object[b] = x;
   }
 }
 
