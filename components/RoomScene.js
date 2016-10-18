@@ -107,10 +107,6 @@ class RoomScene extends Component {
     return this.width / (16/9);
   }
 
-  handleChangeWallTile(wallIndex, tileIndex, e) {
-    this.changeWallTile(wallIndex, tileIndex);
-  }
-
   render() {
     return (
       <div className="room-scene-container">
