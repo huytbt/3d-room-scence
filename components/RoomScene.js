@@ -126,10 +126,21 @@ class RoomScene extends Component {
   }
 
   changeWallTile(wallIndex, tileIndex) {
-    this.walls[wallIndex].mountedTiles = [];
-    this.walls[wallIndex].options.selectedTile = tileIndex;
-    this.room.children = [];
-    this.renderScene();
+    const wall = this.walls[wallIndex];
+
+    wall.mountedTiles.map((tile) => {
+      this.room.remove(tile);
+    });
+    wall.mountedTiles = [];
+
+    wall.options.selectedTile = tileIndex;
+
+    wall.mount();
+    wall.mountedTiles.map((tile) => {
+      this.room.add(tile);
+    });
+
+    this.referesh();
   }
 
   referesh() {
