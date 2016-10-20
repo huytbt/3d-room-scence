@@ -14,11 +14,17 @@ var _Tile = require('./Tile');
 
 var _Tile2 = _interopRequireDefault(_Tile);
 
+var _three = require('three');
+
+var Three = _interopRequireWildcard(_three);
+
 var _Wall = require('./Wall');
 
 var _Wall2 = _interopRequireDefault(_Wall);
 
-var _phoria = require('phoria.js');
+var _async = require('async');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -38,6 +44,7 @@ var RoomScene = function (_Component) {
 
     _this.renderer = null;
     _this.scene = null;
+    _this.room = null;
     _this.walls = [];
     _this.layerImages = [];
     _this.tiles = [];
@@ -51,8 +58,8 @@ var RoomScene = function (_Component) {
 
       this.initScene();
       this.loadWalls();
-      this.loadLayerImages(function () {
-        _this2.loadTilesTextures(function () {
+      this.loadTilesTextures(function () {
+        _this2.loadLayerImages(function () {
           _this2.renderScene();
         });
       });
@@ -60,101 +67,120 @@ var RoomScene = function (_Component) {
   }, {
     key: 'initScene',
     value: function initScene() {
-      this.renderer = new _phoria.Phoria.CanvasRenderer(this.refs.canvas);
+      this.room = new Three.Object3D();
+      if (this.props.debug) {
+        this.room.add(new Three.GridHelper(100, 50));
+      }
 
-      this.scene = new _phoria.Phoria.Scene();
-      this.scene.camera.lookat = this.props.camera.lookat || { x: 0.0, y: 3.1, z: 34.0 };
-      this.scene.camera.position = this.props.camera.position || { x: 0.0, y: 5.7, z: -20.0 };
-      this.scene.perspective.aspect = this.width / this.height;
-      this.scene.perspective.fov = this.props.perspective.fov || 14;
-      this.scene.viewport.width = this.width;
-      this.scene.viewport.height = this.height;
+      this.scene = new Three.Scene();
+      this.scene.add(this.room);
+
+      this.camera = new Three.PerspectiveCamera(this.props.perspective.fov, this.width / this.height, 1, 100000);
+      this.camera.position.set(this.props.camera.position.x, this.props.camera.position.y, this.props.camera.position.z);
+      this.camera.setViewOffset(this.width, this.height, this.props.perspective.viewOffset.x, this.props.perspective.viewOffset.y, this.width, this.height);
+
+      this.renderer = new Three.WebGLRenderer();
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer.setSize(this.width, this.height);
+      this.renderer.setClearColor(0xffffff, 1);
+
+      this.refs.threeContainer.appendChild(this.renderer.domElement);
+    }
+  }, {
+    key: 'loadWalls',
+    value: function loadWalls() {
+      var _this3 = this;
+
+      this.props.walls.map(function (element) {
+        var wall = new _Wall2.default(element.position, element.plan, element.direction, element.width, element.height, element.ratio, element.tileRatio, element.tiles, element.options);
+        _this3.walls.push(wall);
+      });
+    }
+  }, {
+    key: 'loadTilesTextures',
+    value: function loadTilesTextures(callback) {
+      (0, _async.eachSeries)(this.walls, function (wall, callback) {
+        var tiles = [];
+        (0, _async.eachSeries)(wall.tiles, function (info, callback) {
+          var texture = new Three.TextureLoader().load(info.image, function (texture) {
+            texture.minFilter = texture.magFilter = Three.LinearFilter;
+            texture.mapping = Three.UVMapping;
+
+            var tile = new _Tile2.default(info.width, info.height, wall.plan, wall.tileRatio, texture);
+            tiles.push(tile);
+
+            callback();
+          });
+        }, function () {
+          wall.tiles = tiles;
+          callback();
+        });
+      }, callback);
+    }
+  }, {
+    key: 'loadLayerImages',
+    value: function loadLayerImages(callback) {
+      var _this4 = this;
+
+      (0, _async.eachSeries)(this.props.layerImages, function (element, callback) {
+        var texture = new Three.TextureLoader().load(element.image, function (texture) {
+          _this4.layerImages.push({
+            texture: texture,
+            meta: element
+          });
+          callback();
+        });
+      }, callback);
     }
   }, {
     key: 'renderScene',
     value: function renderScene() {
-      var _this3 = this;
+      var _this5 = this;
+
+      this.layerImages.map(function (layer) {
+        _this5.renderImage(layer);
+      });
 
       this.walls.map(function (wall) {
         wall.mount();
         wall.mountedTiles.map(function (tile) {
-          _this3.scene.graph.push(tile);
+          _this5.room.add(tile);
         });
       });
-      this.scene.modelView();
-      this.renderer.render(this.scene);
-      this.layerImages.map(function (layer) {
-        _this3.renderer.renderImage(layer.image, layer.meta.left, layer.meta.top, layer.meta.width, layer.meta.height, layer.meta.opacity);
-      });
+
+      this.renderer.render(this.scene, this.camera);
+    }
+  }, {
+    key: 'renderImage',
+    value: function renderImage(layer) {
+      var meta = layer.meta;
+      var texture = layer.texture;
+      var transparent = false;
+      if (meta.opacity >= 0) {
+        transparent = true;
+      }
+
+      var image = new Three.Mesh(new Three.BoxGeometry(meta.width * meta.ratio, meta.height * meta.ratio, 0), new Three.MeshBasicMaterial({ map: texture, transparent: transparent, opacity: meta.opacity }));
+      image.position.set(meta.position.x * meta.ratio, meta.position.y * meta.ratio, meta.position.z * meta.ratio);
+      this.scene.add(image);
     }
   }, {
     key: 'changeWallTile',
     value: function changeWallTile(wallIndex, tileIndex) {
       this.walls[wallIndex].mountedTiles = [];
       this.walls[wallIndex].options.selectedTile = tileIndex;
-      this.scene.graph = [];
+      this.scene.children = [];
       this.renderScene();
     }
   }, {
-    key: 'loadWalls',
-    value: function loadWalls() {
-      var _this4 = this;
-
-      this.props.walls.map(function (element) {
-        var wall = new _Wall2.default(element.position, element.plan, element.direction, element.width, element.height, element.ratio, element.tiles, element.options);
-        _this4.walls.push(wall);
-      });
-    }
-  }, {
-    key: 'loadTilesTextures',
-    value: function loadTilesTextures(callback) {
-      var loader = new _phoria.Phoria.Preloader();
-
-      this.walls.map(function (wall) {
-        var tiles = [];
-        wall.tiles.map(function (info) {
-          var texture = new Image();
-          loader.addImage(texture, info.image);
-
-          var tile = new _Tile2.default(info.width, info.height, wall.ratio, texture);
-          tiles.push(tile);
-        });
-        wall.tiles = tiles;
-      });
-
-      loader.onLoadCallback(callback);
-    }
-  }, {
-    key: 'loadLayerImages',
-    value: function loadLayerImages(callback) {
-      var _this5 = this;
-
-      var loader = new _phoria.Phoria.Preloader();
-
-      this.props.layerImages.map(function (element) {
-        var image = new Image();
-        _this5.layerImages.push({
-          image: image,
-          meta: element
-        });
-        loader.addImage(image, element.image);
-      });
-
-      loader.onLoadCallback(callback);
-    }
-  }, {
-    key: 'handleChangeWallTile',
-    value: function handleChangeWallTile(wallIndex, tileIndex, e) {
-      this.changeWallTile(wallIndex, tileIndex);
+    key: 'referesh',
+    value: function referesh() {
+      this.renderer.render(this.scene, this.camera);
     }
   }, {
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(
-        'div',
-        { className: 'room-scene-container' },
-        _react2.default.createElement('canvas', { height: this.height, ref: 'canvas', style: { backgroundColor: '#eee' }, width: this.width })
-      );
+      return _react2.default.createElement('div', { className: 'room-scene-container', ref: 'threeContainer' });
     }
   }, {
     key: 'width',
@@ -174,13 +200,16 @@ var RoomScene = function (_Component) {
 RoomScene.propTypes = {
   size: _react2.default.PropTypes.number,
   camera: _react2.default.PropTypes.object.isRequired,
+  debug: _react2.default.PropTypes.bool,
+  scene: _react2.default.PropTypes.object,
   perspective: _react2.default.PropTypes.object.isRequired,
   walls: _react2.default.PropTypes.array.isRequired,
   layerImages: _react2.default.PropTypes.array.isRequired
 };
 
 RoomScene.defaultProps = {
-  size: 1600
+  size: 1600,
+  debug: false
 };
 
 exports.default = RoomScene;

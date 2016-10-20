@@ -7,9 +7,10 @@
     "main": "main"
   },
   "dependencies": {
-    "phoria.js": "git+https://github.com/huytbt/phoria.js.git",
+    "async": "^2.1.2",
     "react": "^15.3.2",
-    "react-dom": "^15.3.2"
+    "react-dom": "^15.3.2",
+    "three": "^0.81.2"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",

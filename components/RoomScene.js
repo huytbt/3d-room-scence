@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import Tile from './Tile';
+import * as Three from 'three';
 import Wall from './Wall';
-import {Phoria} from 'phoria.js';
+import {eachSeries} from 'async';
 
 class RoomScene extends Component {
   constructor(props) {
@@ -9,6 +10,7 @@ class RoomScene extends Component {
 
     this.renderer = null;
     this.scene = null;
+    this.room = null;
     this.walls = [];
     this.layerImages = [];
     this.tiles = [];
@@ -17,86 +19,121 @@ class RoomScene extends Component {
   componentDidMount () {
     this.initScene();
     this.loadWalls();
-    this.loadLayerImages(() => {
-      this.loadTilesTextures(() => {
+    this.loadTilesTextures(() => {
+      this.loadLayerImages(() => {
         this.renderScene();
       });
     });
   }
 
   initScene() {
-    this.renderer = new Phoria.CanvasRenderer(this.refs.canvas);
+    this.room = new Three.Object3D();
+    if (this.props.debug) {
+      this.room.add(new Three.GridHelper( 100, 50 ));
+    }
 
-    this.scene = new Phoria.Scene();
-    this.scene.camera.lookat = this.props.camera.lookat || {x:0.0, y:3.1, z:34.0};
-    this.scene.camera.position = this.props.camera.position || {x:0.0, y:5.7, z:-20.0};
-    this.scene.perspective.aspect = this.width / this.height;
-    this.scene.perspective.fov = this.props.perspective.fov || 14;
-    this.scene.viewport.width = this.width;
-    this.scene.viewport.height = this.height;
-  }
+    this.scene = new Three.Scene();
+    this.scene.add(this.room);
 
-  renderScene() {
-    this.walls.map((wall) => {
-      wall.mount();
-      wall.mountedTiles.map((tile) => {
-        this.scene.graph.push(tile);
-      });
-    });
-    this.scene.modelView();
-    this.renderer.render(this.scene);
-    this.layerImages.map((layer) => {
-      this.renderer.renderImage(layer.image, layer.meta.left, layer.meta.top,
-        layer.meta.width, layer.meta.height, layer.meta.opacity);
-    });
-  }
+    this.camera = new Three.PerspectiveCamera(this.props.perspective.fov, this.width / this.height, 1, 100000);
+    this.camera.position.set(
+      this.props.camera.position.x,
+      this.props.camera.position.y,
+      this.props.camera.position.z
+    );
+    this.camera.setViewOffset(this.width, this.height,
+      this.props.perspective.viewOffset.x, this.props.perspective.viewOffset.y,
+      this.width, this.height
+    );
 
-  changeWallTile(wallIndex, tileIndex) {
-    this.walls[wallIndex].mountedTiles = [];
-    this.walls[wallIndex].options.selectedTile = tileIndex;
-    this.scene.graph = [];
-    this.renderScene();
+    this.renderer = new Three.WebGLRenderer();
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(this.width,this.height );
+    this.renderer.setClearColor(0xffffff, 1);
+
+    this.refs.threeContainer.appendChild(this.renderer.domElement);
   }
 
   loadWalls() {
     this.props.walls.map((element) => {
       const wall = new Wall(element.position, element.plan, element.direction,
-        element.width, element.height, element.ratio, element.tiles, element.options);
+        element.width, element.height, element.ratio, element.tileRatio, element.tiles, element.options);
       this.walls.push(wall);
     });
   }
 
   loadTilesTextures(callback) {
-    const loader = new Phoria.Preloader();
-
-    this.walls.map((wall) => {
+    eachSeries(this.walls, (wall, callback) => {
       const tiles = [];
-      wall.tiles.map((info) => {
-        const texture = new Image();
-        loader.addImage(texture, info.image);
+      eachSeries(wall.tiles, (info, callback) => {
+        const texture = new Three.TextureLoader().load(info.image, (texture) => {
+          texture.minFilter = texture.magFilter = Three.LinearFilter;
+          texture.mapping = Three.UVMapping;
 
-        const tile = new Tile(info.width, info.height, wall.ratio, texture);
-        tiles.push(tile);
+          const tile = new Tile(info.width, info.height, wall.plan, wall.tileRatio, texture);
+          tiles.push(tile);
+
+          callback();
+        });
+      }, () => {
+        wall.tiles = tiles;
+        callback();
       });
-      wall.tiles = tiles;
-    });
-
-    loader.onLoadCallback(callback);
+    }, callback);
   }
 
   loadLayerImages(callback) {
-    const loader = new Phoria.Preloader();
-
-    this.props.layerImages.map((element) => {
-      const image = new Image();
-      this.layerImages.push({
-        image,
-        meta: element
+    eachSeries(this.props.layerImages, (element, callback) => {
+      const texture = new Three.TextureLoader().load(element.image, (texture) => {
+        this.layerImages.push({
+          texture,
+          meta: element
+        });
+        callback();
       });
-      loader.addImage(image, element.image);
+    }, callback);
+  }
+
+  renderScene() {
+    this.layerImages.map((layer) => {
+      this.renderImage(layer);
     });
 
-    loader.onLoadCallback(callback);
+    this.walls.map((wall) => {
+      wall.mount();
+      wall.mountedTiles.map((tile) => {
+        this.room.add(tile);
+      });
+    });
+
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  renderImage(layer) {
+    const meta = layer.meta;
+    const texture = layer.texture;
+    let transparent = false;
+    if (meta.opacity >= 0) {
+      transparent = true;
+    }
+
+    const image = new Three.Mesh(
+      new Three.BoxGeometry(meta.width * meta.ratio, meta.height * meta.ratio, 0),
+      new Three.MeshBasicMaterial( {map: texture, transparent, opacity: meta.opacity} )
+    );
+    image.position.set(meta.position.x * meta.ratio, meta.position.y * meta.ratio, meta.position.z * meta.ratio);
+    this.scene.add(image);
+  }
+
+  changeWallTile(wallIndex, tileIndex) {
+    this.walls[wallIndex].mountedTiles = [];
+    this.walls[wallIndex].options.selectedTile = tileIndex;
+    this.scene.children = [];
+    this.renderScene();
+  }
+
+  referesh() {
+    this.renderer.render(this.scene, this.camera);
   }
 
   get width() {
@@ -109,9 +146,7 @@ class RoomScene extends Component {
 
   render() {
     return (
-      <div className="room-scene-container">
-        <canvas height={this.height} ref="canvas" style={{backgroundColor: '#eee'}} width={this.width} />
-      </div>
+      <div className="room-scene-container" ref="threeContainer" />
     );
   }
 }
@@ -119,13 +154,15 @@ class RoomScene extends Component {
 RoomScene.propTypes = {
   size: React.PropTypes.number,
   camera: React.PropTypes.object.isRequired,
+  debug: React.PropTypes.bool,
   perspective: React.PropTypes.object.isRequired,
   walls: React.PropTypes.array.isRequired,
   layerImages: React.PropTypes.array.isRequired
 };
 
 RoomScene.defaultProps = {
-  size: 1600
+  size: 1600,
+  debug: false
 };
 
 export default RoomScene;

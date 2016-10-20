@@ -9,12 +9,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Object3D = function () {
-  function Object3D(width, height, ratio) {
+  function Object3D(width, height, plan, ratio) {
     _classCallCheck(this, Object3D);
 
     this.width = width;
     this.height = height;
     this.ratio = ratio;
+    this.plan = plan;
 
     this.width *= this.ratio;
     this.height *= this.ratio;
@@ -34,10 +35,10 @@ var Object3D = function () {
           ];
           break;
         case 'y':
-          points = [{ x: 0 * this.width + this.position.x, z: -1 * (0 * this.height - this.position.z), y: this.position.y }, // bottom - left
-          { x: 0 * this.width + this.position.x, z: -1 * (1 * this.height - this.position.z), y: this.position.y }, // top - left
-          { x: 1 * this.width + this.position.x, z: -1 * (1 * this.height - this.position.z), y: this.position.y }, // top - right
-          { x: 1 * this.width + this.position.x, z: -1 * (0 * this.height - this.position.z), y: this.position.y } // bottom - right
+          points = [{ x: 0 * this.width + this.position.x, z: 0 * this.height + this.position.z, y: this.position.y }, // bottom - left
+          { x: 0 * this.width + this.position.x, z: 1 * this.height + this.position.z, y: this.position.y }, // top - left
+          { x: 1 * this.width + this.position.x, z: 1 * this.height + this.position.z, y: this.position.y }, // top - right
+          { x: 1 * this.width + this.position.x, z: 0 * this.height + this.position.z, y: this.position.y } // bottom - right
           ];
           break;
         case 'z':
