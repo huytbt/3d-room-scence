@@ -167,10 +167,23 @@ var RoomScene = function (_Component) {
   }, {
     key: 'changeWallTile',
     value: function changeWallTile(wallIndex, tileIndex) {
-      this.walls[wallIndex].mountedTiles = [];
-      this.walls[wallIndex].options.selectedTile = tileIndex;
-      this.room.children = [];
-      this.renderScene();
+      var _this6 = this;
+
+      var wall = this.walls[wallIndex];
+
+      wall.mountedTiles.map(function (tile) {
+        _this6.room.remove(tile);
+      });
+      wall.mountedTiles = [];
+
+      wall.options.selectedTile = tileIndex;
+
+      wall.mount();
+      wall.mountedTiles.map(function (tile) {
+        _this6.room.add(tile);
+      });
+
+      this.referesh();
     }
   }, {
     key: 'referesh',
