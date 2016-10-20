@@ -40,9 +40,11 @@ var Wall = function (_Object3D) {
     _this.direction = direction;
     _this.tileRatio = tileRatio;
     _this.tiles = tiles || [];
-    _this.options = options || {
-      selectedTile: null
-    };
+    _this.options = Object.assign({
+      selectedTile: null,
+      defaultColor: 0xffffff,
+      layout: 0
+    }, options);
 
     _this.position.x *= _this.ratio;
     _this.position.y *= _this.ratio;
@@ -56,8 +58,7 @@ var Wall = function (_Object3D) {
     key: 'mount',
     value: function mount() {
       if (this.options.selectedTile === null) {
-        var defaultColor = this.options.defaultColor || 0xffffff;
-        var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, defaultColor);
+        var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor);
         _tile.position = this.position;
         this.mountedTiles.push(_tile.mount());
         return this.mountedTiles;
@@ -86,12 +87,25 @@ var Wall = function (_Object3D) {
       var _this2 = this;
 
       var startPoint = this.points[0];
-
+      var cell = { x: 0, y: 0 };
       this.pushTileVertical(tile, startPoint, y, function () {
         _this2.pushTileHorizontal(tile, startPoint, x, function () {
-          tile.position = startPoint;
+          tile.position = Object.assign({}, startPoint);
+
+          // add tiles by layout: brick horizontal
+          if (_this2.options.layout === 1 && cell.y % 2 === 0) {
+            tile.position[x] = tile.position[x] + tile.width / 2 * (_this2.direction.x === 'lr' ? -1 : 1);
+          }
+          // add tiles by layout: brick vertical
+          else if (_this2.options.layout === 2 && cell.x % 2 === 0) {
+              tile.position[y] = tile.position[y] + tile.height / 2 * (_this2.direction.x === 'bt' ? -1 : 1);
+            }
+
           tiles.push(tile.mount());
+          cell.x++;
         });
+        cell.y++;
+        cell.x = 0;
       });
     }
   }, {
