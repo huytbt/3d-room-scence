@@ -38,7 +38,7 @@ var Tile = function (_Object3D) {
 
   _createClass(Tile, [{
     key: 'mount',
-    value: function mount(options) {
+    value: function mount() {
       var boxGeometry = null;
       switch (this.plan) {
         case 'x':
@@ -52,7 +52,14 @@ var Tile = function (_Object3D) {
           break;
       }
 
-      var tile = new Three.Mesh(boxGeometry, new Three.MeshBasicMaterial({ map: this.texture, transparent: false, opacity: 1 }));
+      var material = null;
+      if (typeof this.texture === 'number') {
+        material = new Three.MeshBasicMaterial({ color: this.texture });
+      } else {
+        material = new Three.MeshBasicMaterial({ map: this.texture, transparent: false, opacity: 1 });
+      }
+
+      var tile = new Three.Mesh(boxGeometry, material);
       tile.position.set(this.position.x, this.position.y, this.position.z);
 
       return tile;

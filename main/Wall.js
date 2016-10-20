@@ -10,6 +10,10 @@ var _Object3D2 = require('./Object3D');
 
 var _Object3D3 = _interopRequireDefault(_Object3D2);
 
+var _Tile = require('./Tile');
+
+var _Tile2 = _interopRequireDefault(_Tile);
+
 var _three = require('three');
 
 var Three = _interopRequireWildcard(_three);
@@ -52,7 +56,11 @@ var Wall = function (_Object3D) {
     key: 'mount',
     value: function mount() {
       if (this.options.selectedTile === null) {
-        return [];
+        var defaultColor = this.options.defaultColor || 0xffffff;
+        var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, defaultColor);
+        _tile.position = this.position;
+        this.mountedTiles.push(_tile.mount());
+        return this.mountedTiles;
       }
 
       var tile = this.tiles[this.options.selectedTile];
@@ -82,7 +90,7 @@ var Wall = function (_Object3D) {
       this.pushTileVertical(tile, startPoint, y, function () {
         _this2.pushTileHorizontal(tile, startPoint, x, function () {
           tile.position = startPoint;
-          tiles.push(tile.mount(_this2.options));
+          tiles.push(tile.mount());
         });
       });
     }

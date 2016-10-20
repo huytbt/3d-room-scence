@@ -7,7 +7,7 @@ class Tile extends Object3D {
     this.texture = texture;
   }
 
-  mount(options) {
+  mount() {
     let boxGeometry = null;
     switch (this.plan) {
       case 'x':
@@ -21,10 +21,14 @@ class Tile extends Object3D {
         break;
     }
 
-    const tile = new Three.Mesh(
-      boxGeometry,
-      new Three.MeshBasicMaterial( {map: this.texture, transparent: false, opacity: 1} )
-    );
+    let material = null;
+    if (typeof this.texture === 'number') {
+      material = new Three.MeshBasicMaterial( {color: this.texture} );
+    } else {
+      material = new Three.MeshBasicMaterial( {map: this.texture, transparent: false, opacity: 1} );
+    }
+
+    const tile = new Three.Mesh(boxGeometry, material);
     tile.position.set(this.position.x, this.position.y, this.position.z);
 
     return tile;
