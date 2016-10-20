@@ -60,6 +60,10 @@ var RoomScene = function (_Component) {
       this.loadWalls();
       this.loadTilesTextures(function () {
         _this2.loadLayerImages(function () {
+          _this2.layerImages.map(function (layer) {
+            _this2.renderImage(layer);
+          });
+
           _this2.renderScene();
         });
       });
@@ -137,10 +141,6 @@ var RoomScene = function (_Component) {
     value: function renderScene() {
       var _this5 = this;
 
-      this.layerImages.map(function (layer) {
-        _this5.renderImage(layer);
-      });
-
       this.walls.map(function (wall) {
         wall.mount();
         wall.mountedTiles.map(function (tile) {
@@ -169,7 +169,7 @@ var RoomScene = function (_Component) {
     value: function changeWallTile(wallIndex, tileIndex) {
       this.walls[wallIndex].mountedTiles = [];
       this.walls[wallIndex].options.selectedTile = tileIndex;
-      this.scene.children = [];
+      this.room.children = [];
       this.renderScene();
     }
   }, {
@@ -201,7 +201,6 @@ RoomScene.propTypes = {
   size: _react2.default.PropTypes.number,
   camera: _react2.default.PropTypes.object.isRequired,
   debug: _react2.default.PropTypes.bool,
-  scene: _react2.default.PropTypes.object,
   perspective: _react2.default.PropTypes.object.isRequired,
   walls: _react2.default.PropTypes.array.isRequired,
   layerImages: _react2.default.PropTypes.array.isRequired

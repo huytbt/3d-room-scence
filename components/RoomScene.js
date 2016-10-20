@@ -21,6 +21,10 @@ class RoomScene extends Component {
     this.loadWalls();
     this.loadTilesTextures(() => {
       this.loadLayerImages(() => {
+        this.layerImages.map((layer) => {
+          this.renderImage(layer);
+        });
+
         this.renderScene();
       });
     });
@@ -95,10 +99,6 @@ class RoomScene extends Component {
   }
 
   renderScene() {
-    this.layerImages.map((layer) => {
-      this.renderImage(layer);
-    });
-
     this.walls.map((wall) => {
       wall.mount();
       wall.mountedTiles.map((tile) => {
@@ -128,7 +128,7 @@ class RoomScene extends Component {
   changeWallTile(wallIndex, tileIndex) {
     this.walls[wallIndex].mountedTiles = [];
     this.walls[wallIndex].options.selectedTile = tileIndex;
-    this.scene.children = [];
+    this.room.children = [];
     this.renderScene();
   }
 
