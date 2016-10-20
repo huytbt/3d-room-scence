@@ -52,14 +52,14 @@ const roomScene = {
   walls: [
     // back wall
     {
-      position: {x:0, y:2500/2, z:1970},
+      position: {x:0, y:1500/2, z:1970},
       plan: 'z',
       direction: {
         x: 'rl',
         y: 'bt'
       },
       width: 2300,
-      height: 2500,
+      height: 1500,
       ratio: 1/250,
       tileRatio: 1/500,
       tiles,
@@ -69,14 +69,14 @@ const roomScene = {
     },
     // right wall
     {
-      position: {x:2300/2, y:1250, z:3000},
+      position: {x:2300/2, y:1500/2, z:3000},
       plan: 'x',
       direction: {
         x: 'lr',
         y: 'bt'
       },
       width: 2000,
-      height: 2500,
+      height: 1500,
       ratio: 1/250,
       tileRatio: 1/500,
       tiles,

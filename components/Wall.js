@@ -1,4 +1,5 @@
 import Object3D from './Object3D';
+import Tile from './Tile';
 import * as Three from 'three';
 
 class Wall extends Object3D {
@@ -21,7 +22,11 @@ class Wall extends Object3D {
 
   mount() {
     if (this.options.selectedTile === null) {
-      return [];
+      const defaultColor = this.options.defaultColor || 0xffffff;
+      const tile = new Tile(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, defaultColor);
+      tile.position = this.position;
+      this.mountedTiles.push(tile.mount());
+      return this.mountedTiles;
     }
 
     const tile = this.tiles[this.options.selectedTile];
@@ -48,7 +53,7 @@ class Wall extends Object3D {
     this.pushTileVertical(tile, startPoint, y, () => {
       this.pushTileHorizontal(tile, startPoint, x, () => {
         tile.position = startPoint;
-        tiles.push(tile.mount(this.options));
+        tiles.push(tile.mount());
       });
     });
   }
