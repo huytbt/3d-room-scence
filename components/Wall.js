@@ -9,9 +9,11 @@ class Wall extends Object3D {
     this.direction = direction;
     this.tileRatio = tileRatio;
     this.tiles = tiles || [];
-    this.options = options || {
-      selectedTile: null
-    };
+    this.options = Object.assign({
+      selectedTile: null,
+      defaultColor: 0xffffff,
+      layout: 0
+    }, options);
 
     this.position.x *= this.ratio;
     this.position.y *= this.ratio;
@@ -22,8 +24,8 @@ class Wall extends Object3D {
 
   mount() {
     if (this.options.selectedTile === null) {
-      const defaultColor = this.options.defaultColor || 0xffffff;
-      const tile = new Tile(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, defaultColor);
+      const tile = new Tile(this.width / this.ratio, this.height / this.ratio,
+        this.plan, this.ratio, this.options.defaultColor);
       tile.position = this.position;
       this.mountedTiles.push(tile.mount());
       return this.mountedTiles;
@@ -49,12 +51,25 @@ class Wall extends Object3D {
 
   pushTile(tiles, tile, x, y) {
     let startPoint = this.points[0];
-
+    let cell = {x: 0, y: 0};
     this.pushTileVertical(tile, startPoint, y, () => {
       this.pushTileHorizontal(tile, startPoint, x, () => {
-        tile.position = startPoint;
+        tile.position = Object.assign({}, startPoint);
+
+        // add tiles by layout: brick horizontal
+        if (this.options.layout === 1 && cell.y % 2 === 0) {
+          tile.position[x] = tile.position[x] + tile.width/2 * (this.direction.x === 'lr' ? -1 : 1);
+        }
+        // add tiles by layout: brick vertical
+        else if (this.options.layout === 2 && cell.x % 2 === 0) {
+          tile.position[y] = tile.position[y] + tile.height/2 * (this.direction.x === 'bt' ? -1 : 1);
+        }
+
         tiles.push(tile.mount());
+        cell.x++;
       });
+      cell.y++;
+      cell.x = 0;
     });
   }
 
