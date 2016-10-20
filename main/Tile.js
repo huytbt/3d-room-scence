@@ -10,7 +10,11 @@ var _Object3D2 = require('./Object3D');
 
 var _Object3D3 = _interopRequireDefault(_Object3D2);
 
-var _phoria = require('phoria.js');
+var _three = require('three');
+
+var Three = _interopRequireWildcard(_three);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -23,10 +27,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Tile = function (_Object3D) {
   _inherits(Tile, _Object3D);
 
-  function Tile(width, height, ratio, texture) {
+  function Tile(width, height, plan, ratio, texture) {
     _classCallCheck(this, Tile);
 
-    var _this = _possibleConstructorReturn(this, (Tile.__proto__ || Object.getPrototypeOf(Tile)).call(this, width, height, ratio));
+    var _this = _possibleConstructorReturn(this, (Tile.__proto__ || Object.getPrototypeOf(Tile)).call(this, width, height, plan, ratio));
 
     _this.texture = texture;
     return _this;
@@ -35,35 +39,23 @@ var Tile = function (_Object3D) {
   _createClass(Tile, [{
     key: 'mount',
     value: function mount(options) {
-      var vertices = [1, 2, 3, 0];
-      if (this.plan === 'y') {
-        vertices = [3, 0, 1, 2];
+      var boxGeometry = null;
+      switch (this.plan) {
+        case 'x':
+          boxGeometry = new Three.BoxGeometry(1 / 10, this.height, this.width);
+          break;
+        case 'y':
+          boxGeometry = new Three.BoxGeometry(this.width, 1 / 10, this.height);
+          break;
+        case 'z':
+          boxGeometry = new Three.BoxGeometry(this.width, this.height, 1 / 10);
+          break;
       }
-      if (options.flipTile) {
-        this.swap(vertices, 0, 1);
-        this.swap(vertices, 2, 3);
-      }
-      var tile = _phoria.Phoria.Entity.create({
-        points: this.points,
-        polygons: [{ vertices: vertices }],
-        style: {
-          shademode: 'plain',
-          opacity: 1,
-          doublesided: true
-        }
-      });
 
-      tile.textures.push(this.texture);
-      tile.polygons[0].texture = 0;
+      var tile = new Three.Mesh(boxGeometry, new Three.MeshBasicMaterial({ map: this.texture, transparent: false, opacity: 1 }));
+      tile.position.set(this.position.x, this.position.y, this.position.z);
 
       return tile;
-    }
-  }, {
-    key: 'swap',
-    value: function swap(object, a, b) {
-      var x = object[a];
-      object[a] = object[b];
-      object[b] = x;
     }
   }]);
 

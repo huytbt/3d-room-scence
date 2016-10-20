@@ -1,8 +1,9 @@
 export default class Object3D {
-  constructor(width, height, ratio) {
+  constructor(width, height, plan, ratio) {
     this.width = width;
     this.height = height;
     this.ratio = ratio;
+    this.plan = plan;
 
     this.width *= this.ratio;
     this.height *= this.ratio;
@@ -22,10 +23,10 @@ export default class Object3D {
         break;
       case 'y':
         points = [
-          {x: 0*this.width + this.position.x, z: -1*(0*this.height - this.position.z), y: this.position.y}, // bottom - left
-          {x: 0*this.width + this.position.x, z: -1*(1*this.height - this.position.z), y: this.position.y}, // top - left
-          {x: 1*this.width + this.position.x, z: -1*(1*this.height - this.position.z), y: this.position.y}, // top - right
-          {x: 1*this.width + this.position.x, z: -1*(0*this.height - this.position.z), y: this.position.y}  // bottom - right
+          {x: 0*this.width + this.position.x, z: 0*this.height + this.position.z, y: this.position.y}, // bottom - left
+          {x: 0*this.width + this.position.x, z: 1*this.height + this.position.z, y: this.position.y}, // top - left
+          {x: 1*this.width + this.position.x, z: 1*this.height + this.position.z, y: this.position.y}, // top - right
+          {x: 1*this.width + this.position.x, z: 0*this.height + this.position.z, y: this.position.y}  // bottom - right
         ];
         break;
       case 'z':

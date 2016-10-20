@@ -1,13 +1,12 @@
 import Object3D from './Object3D';
-import Tile from './Tile';
-import {Phoria} from 'phoria.js';
+import * as Three from 'three';
 
 class Wall extends Object3D {
-  constructor(position, plan, direction, width, height, ratio, tiles, options) {
-    super(width, height, ratio);
+  constructor(position, plan, direction, width, height, ratio, tileRatio, tiles, options) {
+    super(width, height, plan, ratio);
     this.position = position;
     this.direction = direction;
-    this.plan = plan;
+    this.tileRatio = tileRatio;
     this.tiles = tiles || [];
     this.options = options || {
       selectedTile: null
@@ -28,7 +27,6 @@ class Wall extends Object3D {
     const tile = this.tiles[this.options.selectedTile];
     tile.plan = this.plan;
 
-    let startPoint = this.points[3];
     switch (this.plan) {
       case 'x':
         this.pushTile(this.mountedTiles, tile, 'z', 'y');
@@ -59,8 +57,9 @@ class Wall extends Object3D {
     switch (this.direction.x) {
       case 'lr':
         // left to right
-        startPoint[x] = this.points[0][x];
-        while (startPoint[x] < this.points[2][x]) {
+        startPoint[x] = this.points[0][x] - (-tile.width + this.width) / 2;
+        startPoint[x] -= tile.width; // render more 1 tile
+        while (startPoint[x] < this.points[2][x] - (-tile.width + this.width) / 2 + tile.width) {
           execute();
           startPoint[x] += tile.width;
         }
@@ -68,8 +67,9 @@ class Wall extends Object3D {
 
       case 'rl':
         // right to left
-        startPoint[x] = this.points[2][x] - tile.width;
-        while (startPoint[x] > this.points[0][x] - tile.width) {
+        startPoint[x] = this.points[2][x] - (tile.width + this.width) / 2;
+        startPoint[x] += tile.width; // render more 1 tile
+        while (startPoint[x] > this.points[0][x] - (tile.width + this.width) / 2 - tile.width) {
           execute();
           startPoint[x] -= tile.width;
         }
@@ -81,39 +81,23 @@ class Wall extends Object3D {
     switch (this.direction.y) {
       case 'tb':
         // top to bottom
-        if (this.plan === 'y') {
-          startPoint[y] = this.points[0][y];
-          while (startPoint[y] > this.points[2][y]) {
-            execute();
-            startPoint[y] -= tile.height;
-          }
-          break;
-        } else {
-          startPoint[y] = this.points[2][y] - tile.height;
-          while (startPoint[y] > this.points[0][y] - tile.height) {
-            execute();
-            startPoint[y] -= tile.height;
-          }
-          break;
+        startPoint[y] = this.points[2][y] - (tile.height + this.height) / 2;
+        startPoint[y] += tile.height; // render more 1 tile
+        while (startPoint[y] > this.points[0][y] - (tile.height + this.height) / 2 - tile.height){
+          execute();
+          startPoint[y] -= tile.height;
         }
+        break;
 
       case 'bt':
         // bottom to top
-        if (this.plan === 'y') {
-          startPoint[y] = this.points[2][y] + tile.height;
-          while (startPoint[y] < this.points[0][y] + tile.height) {
-            execute();
-            startPoint[y] += tile.height;
-          }
-          break;
-        } else {
-          startPoint[y] = this.points[0][y];
-          while (startPoint[y] < this.points[2][y]) {
-            execute();
-            startPoint[y] += tile.height;
-          }
-          break;
+        startPoint[y] = this.points[0][y] - (-tile.height + this.height) / 2;
+        startPoint[y] -= tile.height; // render more 1 tile
+        while (startPoint[y] < this.points[2][y] - (-tile.height + this.height) / 2 + tile.height) {
+          execute();
+          startPoint[y] += tile.height;
         }
+        break;
     }
   }
 }

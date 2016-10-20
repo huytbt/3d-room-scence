@@ -10,11 +10,11 @@ var _Object3D2 = require('./Object3D');
 
 var _Object3D3 = _interopRequireDefault(_Object3D2);
 
-var _Tile = require('./Tile');
+var _three = require('three');
 
-var _Tile2 = _interopRequireDefault(_Tile);
+var Three = _interopRequireWildcard(_three);
 
-var _phoria = require('phoria.js');
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27,14 +27,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Wall = function (_Object3D) {
   _inherits(Wall, _Object3D);
 
-  function Wall(position, plan, direction, width, height, ratio, tiles, options) {
+  function Wall(position, plan, direction, width, height, ratio, tileRatio, tiles, options) {
     _classCallCheck(this, Wall);
 
-    var _this = _possibleConstructorReturn(this, (Wall.__proto__ || Object.getPrototypeOf(Wall)).call(this, width, height, ratio));
+    var _this = _possibleConstructorReturn(this, (Wall.__proto__ || Object.getPrototypeOf(Wall)).call(this, width, height, plan, ratio));
 
     _this.position = position;
     _this.direction = direction;
-    _this.plan = plan;
+    _this.tileRatio = tileRatio;
     _this.tiles = tiles || [];
     _this.options = options || {
       selectedTile: null
@@ -58,7 +58,6 @@ var Wall = function (_Object3D) {
       var tile = this.tiles[this.options.selectedTile];
       tile.plan = this.plan;
 
-      var startPoint = this.points[3];
       switch (this.plan) {
         case 'x':
           this.pushTile(this.mountedTiles, tile, 'z', 'y');
@@ -93,8 +92,9 @@ var Wall = function (_Object3D) {
       switch (this.direction.x) {
         case 'lr':
           // left to right
-          startPoint[x] = this.points[0][x];
-          while (startPoint[x] < this.points[2][x]) {
+          startPoint[x] = this.points[0][x] - (-tile.width + this.width) / 2;
+          startPoint[x] -= tile.width; // render more 1 tile
+          while (startPoint[x] < this.points[2][x] - (-tile.width + this.width) / 2 + tile.width) {
             execute();
             startPoint[x] += tile.width;
           }
@@ -102,8 +102,9 @@ var Wall = function (_Object3D) {
 
         case 'rl':
           // right to left
-          startPoint[x] = this.points[2][x] - tile.width;
-          while (startPoint[x] > this.points[0][x] - tile.width) {
+          startPoint[x] = this.points[2][x] - (tile.width + this.width) / 2;
+          startPoint[x] += tile.width; // render more 1 tile
+          while (startPoint[x] > this.points[0][x] - (tile.width + this.width) / 2 - tile.width) {
             execute();
             startPoint[x] -= tile.width;
           }
@@ -116,39 +117,23 @@ var Wall = function (_Object3D) {
       switch (this.direction.y) {
         case 'tb':
           // top to bottom
-          if (this.plan === 'y') {
-            startPoint[y] = this.points[0][y];
-            while (startPoint[y] > this.points[2][y]) {
-              execute();
-              startPoint[y] -= tile.height;
-            }
-            break;
-          } else {
-            startPoint[y] = this.points[2][y] - tile.height;
-            while (startPoint[y] > this.points[0][y] - tile.height) {
-              execute();
-              startPoint[y] -= tile.height;
-            }
-            break;
+          startPoint[y] = this.points[2][y] - (tile.height + this.height) / 2;
+          startPoint[y] += tile.height; // render more 1 tile
+          while (startPoint[y] > this.points[0][y] - (tile.height + this.height) / 2 - tile.height) {
+            execute();
+            startPoint[y] -= tile.height;
           }
+          break;
 
         case 'bt':
           // bottom to top
-          if (this.plan === 'y') {
-            startPoint[y] = this.points[2][y] + tile.height;
-            while (startPoint[y] < this.points[0][y] + tile.height) {
-              execute();
-              startPoint[y] += tile.height;
-            }
-            break;
-          } else {
-            startPoint[y] = this.points[0][y];
-            while (startPoint[y] < this.points[2][y]) {
-              execute();
-              startPoint[y] += tile.height;
-            }
-            break;
+          startPoint[y] = this.points[0][y] - (-tile.height + this.height) / 2;
+          startPoint[y] -= tile.height; // render more 1 tile
+          while (startPoint[y] < this.points[2][y] - (-tile.height + this.height) / 2 + tile.height) {
+            execute();
+            startPoint[y] += tile.height;
           }
+          break;
       }
     }
   }]);
