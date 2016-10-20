@@ -64,7 +64,12 @@ const roomScene = {
       tileRatio: 1/500,
       tiles,
       options: {
-        selectedTile: null
+        selectedTile: null,
+        layout: 2,
+        grout: {
+          size: 15,
+          color: 0xffffff
+        }
       }
     },
     // right wall

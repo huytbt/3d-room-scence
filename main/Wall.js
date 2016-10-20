@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _Grout = require('./Grout');
+
+var _Grout2 = _interopRequireDefault(_Grout);
+
 var _Object3D2 = require('./Object3D');
 
 var _Object3D3 = _interopRequireDefault(_Object3D2);
@@ -43,8 +47,13 @@ var Wall = function (_Object3D) {
     _this.options = Object.assign({
       selectedTile: null,
       defaultColor: 0xffffff,
-      layout: 0
+      layout: 0,
+      grout: {}
     }, options);
+    _this.options.grout = Object.assign({
+      size: 5,
+      color: 0xffffff
+    }, _this.options.grout);
 
     _this.position.x *= _this.ratio;
     _this.position.y *= _this.ratio;
@@ -102,11 +111,24 @@ var Wall = function (_Object3D) {
             }
 
           tiles.push(tile.mount());
+
+          _this2.pushGrouts(tiles, tile);
+
           cell.x++;
         });
         cell.y++;
         cell.x = 0;
       });
+    }
+  }, {
+    key: 'pushGrouts',
+    value: function pushGrouts(tiles, tile) {
+      var grout = new _Grout2.default(tile.width / tile.ratio, tile.height / tile.ratio, this.plan, tile.ratio, this.options.grout.size, this.options.grout.color);
+      grout.position = Object.assign({}, tile.position);
+      tiles.push(grout.mount('top'));
+      tiles.push(grout.mount('bottom'));
+      tiles.push(grout.mount('left'));
+      tiles.push(grout.mount('right'));
     }
   }, {
     key: 'pushTileHorizontal',

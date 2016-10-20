@@ -1,3 +1,4 @@
+import Grout from './Grout';
 import Object3D from './Object3D';
 import Tile from './Tile';
 import * as Three from 'three';
@@ -12,8 +13,13 @@ class Wall extends Object3D {
     this.options = Object.assign({
       selectedTile: null,
       defaultColor: 0xffffff,
-      layout: 0
+      layout: 0,
+      grout: {}
     }, options);
+    this.options.grout = Object.assign({
+      size: 5,
+      color: 0xffffff
+    }, this.options.grout);
 
     this.position.x *= this.ratio;
     this.position.y *= this.ratio;
@@ -66,11 +72,24 @@ class Wall extends Object3D {
         }
 
         tiles.push(tile.mount());
+
+        this.pushGrouts(tiles, tile);
+
         cell.x++;
       });
       cell.y++;
       cell.x = 0;
     });
+  }
+
+  pushGrouts(tiles, tile) {
+    const grout = new Grout(tile.width / tile.ratio, tile.height / tile.ratio,
+      this.plan, tile.ratio, this.options.grout.size, this.options.grout.color);
+    grout.position = Object.assign({}, tile.position);
+    tiles.push(grout.mount('top'));
+    tiles.push(grout.mount('bottom'));
+    tiles.push(grout.mount('left'));
+    tiles.push(grout.mount('right'));
   }
 
   pushTileHorizontal(tile, startPoint, x, execute) {
