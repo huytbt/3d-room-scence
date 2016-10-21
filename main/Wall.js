@@ -51,9 +51,10 @@ var Wall = function (_Object3D) {
       grout: {}
     }, options);
     _this.options.grout = Object.assign({
-      size: 5,
+      size: 0,
       color: 0xffffff
     }, _this.options.grout);
+    _this.options.grout.size *= _this.tileRatio;
 
     _this.position.x *= _this.ratio;
     _this.position.y *= _this.ratio;
@@ -112,7 +113,9 @@ var Wall = function (_Object3D) {
 
           tiles.push(tile.mount());
 
-          _this2.pushGrouts(tiles, tile);
+          if (_this2.options.grout.size) {
+            _this2.pushGrouts(tiles, tile);
+          }
 
           cell.x++;
         });
@@ -133,24 +136,29 @@ var Wall = function (_Object3D) {
   }, {
     key: 'pushTileHorizontal',
     value: function pushTileHorizontal(tile, startPoint, x, execute) {
+      var tileWidth = tile.width;
+      if (this.options.grout.size) {
+        tileWidth += this.options.grout.size * 2;
+      }
+
       switch (this.direction.x) {
         case 'lr':
           // left to right
-          startPoint[x] = this.points[0][x] - (-tile.width + this.width) / 2;
-          startPoint[x] -= tile.width; // render more 1 tile
-          while (startPoint[x] < this.points[2][x] - (-tile.width + this.width) / 2 + tile.width) {
+          startPoint[x] = this.points[0][x] - (-tileWidth + this.width) / 2;
+          startPoint[x] -= tileWidth; // render more 1 tile
+          while (startPoint[x] < this.points[2][x] - (-tileWidth + this.width) / 2 + tileWidth) {
             execute();
-            startPoint[x] += tile.width;
+            startPoint[x] += tileWidth;
           }
           break;
 
         case 'rl':
           // right to left
-          startPoint[x] = this.points[2][x] - (tile.width + this.width) / 2;
-          startPoint[x] += tile.width; // render more 1 tile
-          while (startPoint[x] > this.points[0][x] - (tile.width + this.width) / 2 - tile.width) {
+          startPoint[x] = this.points[2][x] - (tileWidth + this.width) / 2;
+          startPoint[x] += tileWidth; // render more 1 tile
+          while (startPoint[x] > this.points[0][x] - (tileWidth + this.width) / 2 - tileWidth) {
             execute();
-            startPoint[x] -= tile.width;
+            startPoint[x] -= tileWidth;
           }
           break;
       }
@@ -158,24 +166,29 @@ var Wall = function (_Object3D) {
   }, {
     key: 'pushTileVertical',
     value: function pushTileVertical(tile, startPoint, y, execute) {
+      var tileHeight = tile.height;
+      if (this.options.grout.size) {
+        tileHeight += this.options.grout.size * 2;
+      }
+
       switch (this.direction.y) {
         case 'tb':
           // top to bottom
-          startPoint[y] = this.points[2][y] - (tile.height + this.height) / 2;
-          startPoint[y] += tile.height; // render more 1 tile
-          while (startPoint[y] > this.points[0][y] - (tile.height + this.height) / 2 - tile.height) {
+          startPoint[y] = this.points[2][y] - (tileHeight + this.height) / 2;
+          startPoint[y] += tileHeight; // render more 1 tile
+          while (startPoint[y] > this.points[0][y] - (tileHeight + this.height) / 2 - tileHeight) {
             execute();
-            startPoint[y] -= tile.height;
+            startPoint[y] -= tileHeight;
           }
           break;
 
         case 'bt':
           // bottom to top
-          startPoint[y] = this.points[0][y] - (-tile.height + this.height) / 2;
-          startPoint[y] -= tile.height; // render more 1 tile
-          while (startPoint[y] < this.points[2][y] - (-tile.height + this.height) / 2 + tile.height) {
+          startPoint[y] = this.points[0][y] - (-tileHeight + this.height) / 2;
+          startPoint[y] -= tileHeight; // render more 1 tile
+          while (startPoint[y] < this.points[2][y] - (-tileHeight + this.height) / 2 + tileHeight) {
             execute();
-            startPoint[y] += tile.height;
+            startPoint[y] += tileHeight;
           }
           break;
       }
