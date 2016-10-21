@@ -166,10 +166,17 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'changeWallTile',
-    value: function changeWallTile(wallIndex, tileIndex) {
+    value: function changeWallTile(wallIndex, tileIndex, callback) {
       var _this6 = this;
 
       var wall = this.walls[wallIndex];
+
+      if (wall === undefined) {
+        return callback(new Error('Invalid wall index.'));
+      }
+      if (wall.tiles[tileIndex] === undefined) {
+        return callback(new Error('Invalid tile index.'));
+      }
 
       wall.mountedTiles.map(function (tile) {
         _this6.room.remove(tile);
@@ -184,6 +191,74 @@ var RoomScene = function (_Component) {
       });
 
       this.referesh();
+
+      return callback();
+    }
+  }, {
+    key: 'changeWallLayout',
+    value: function changeWallLayout(wallIndex, layout, callback) {
+      var _this7 = this;
+
+      var wall = this.walls[wallIndex];
+
+      if (wall === undefined) {
+        return callback(new Error('Invalid wall index.'));
+      }
+      if (wall.supportLayouts.indexOf(layout) < 0) {
+        return callback(new Error('Invalid layout.'));
+      }
+
+      wall.mountedTiles.map(function (tile) {
+        _this7.room.remove(tile);
+      });
+      wall.mountedTiles = [];
+
+      wall.options.layout = layout;
+
+      wall.mount();
+      wall.mountedTiles.map(function (tile) {
+        _this7.room.add(tile);
+      });
+
+      this.referesh();
+
+      return callback();
+    }
+  }, {
+    key: 'setWallGrout',
+    value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
+      var _this8 = this;
+
+      var wall = this.walls[wallIndex];
+
+      if (wall === undefined) {
+        return callback(new Error('Invalid wall index.'));
+      }
+      if (typeof groutSize !== 'number') {
+        return callback(new Error('Invalid grout size.'));
+      }
+      if (typeof groutColor !== 'number') {
+        return callback(new Error('Invalid grout color.'));
+      }
+
+      wall.mountedTiles.map(function (tile) {
+        _this8.room.remove(tile);
+      });
+      wall.mountedTiles = [];
+
+      wall.grout = {
+        size: groutSize,
+        color: groutColor
+      };
+
+      wall.mount();
+      wall.mountedTiles.map(function (tile) {
+        _this8.room.add(tile);
+      });
+
+      this.referesh();
+
+      return callback();
     }
   }, {
     key: 'referesh',

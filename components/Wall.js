@@ -16,11 +16,9 @@ class Wall extends Object3D {
       layout: 0,
       grout: {}
     }, options);
-    this.options.grout = Object.assign({
-      size: 0,
-      color: 0xffffff
-    }, this.options.grout);
-    this.options.grout.size *= this.tileRatio;
+    this.grout = this.options.grout;
+
+    this.supportLayouts = [0, 1, 2];
 
     this.position.x *= this.ratio;
     this.position.y *= this.ratio;
@@ -151,6 +149,14 @@ class Wall extends Object3D {
         }
         break;
     }
+  }
+
+  set grout(groutOptions) {
+    this.options.grout = Object.assign({
+      size: 0,
+      color: 0xffffff
+    }, groutOptions);
+    this.options.grout.size *= this.tileRatio;
   }
 }
 

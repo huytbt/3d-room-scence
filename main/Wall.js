@@ -50,11 +50,9 @@ var Wall = function (_Object3D) {
       layout: 0,
       grout: {}
     }, options);
-    _this.options.grout = Object.assign({
-      size: 0,
-      color: 0xffffff
-    }, _this.options.grout);
-    _this.options.grout.size *= _this.tileRatio;
+    _this.grout = _this.options.grout;
+
+    _this.supportLayouts = [0, 1, 2];
 
     _this.position.x *= _this.ratio;
     _this.position.y *= _this.ratio;
@@ -192,6 +190,15 @@ var Wall = function (_Object3D) {
           }
           break;
       }
+    }
+  }, {
+    key: 'grout',
+    set: function set(groutOptions) {
+      this.options.grout = Object.assign({
+        size: 0,
+        color: 0xffffff
+      }, groutOptions);
+      this.options.grout.size *= this.tileRatio;
     }
   }]);
 
