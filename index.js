@@ -67,7 +67,7 @@ const roomScene = {
         selectedTile: null,
         layout: 0,
         grout: {
-          size: 5,
+          size: 0,
           color: 0xffffd2
         }
       }
@@ -89,7 +89,7 @@ const roomScene = {
         selectedTile: null,
         layout: 0,
         grout: {
-          size: 5,
+          size: 0,
           color: 0xffffd2
         }
       }
@@ -111,7 +111,7 @@ const roomScene = {
         selectedTile: null,
         layout: 0,
         grout: {
-          size: 5,
+          size: 0,
           color: 0xffffd2
         }
       }

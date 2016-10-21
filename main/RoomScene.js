@@ -166,8 +166,15 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'changeWallTile',
-    value: function changeWallTile(wallIndex, tileIndex) {
+    value: function changeWallTile(wallIndex, tileIndex, callback) {
       var _this6 = this;
+
+      if (this.walls[wallIndex] === undefined) {
+        return callback(new Error('Invalid wall index.'));
+      }
+      if (this.walls[wallIndex].tiles[tileIndex] === undefined) {
+        return callback(new Error('Invalid tile index.'));
+      }
 
       var wall = this.walls[wallIndex];
 
@@ -184,6 +191,8 @@ var RoomScene = function (_Component) {
       });
 
       this.referesh();
+
+      return callback();
     }
   }, {
     key: 'referesh',

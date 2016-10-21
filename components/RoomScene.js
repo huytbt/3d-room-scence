@@ -125,7 +125,14 @@ class RoomScene extends Component {
     this.scene.add(image);
   }
 
-  changeWallTile(wallIndex, tileIndex) {
+  changeWallTile(wallIndex, tileIndex, callback) {
+    if (this.walls[wallIndex] === undefined) {
+      return callback(new Error('Invalid wall index.'));
+    }
+    if (this.walls[wallIndex].tiles[tileIndex] === undefined) {
+      return callback(new Error('Invalid tile index.'));
+    }
+
     const wall = this.walls[wallIndex];
 
     wall.mountedTiles.map((tile) => {
@@ -141,6 +148,8 @@ class RoomScene extends Component {
     });
 
     this.referesh();
+
+    return callback();
   }
 
   referesh() {
