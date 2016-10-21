@@ -83,7 +83,9 @@ var RoomScene = function (_Component) {
       this.camera.position.set(this.props.camera.position.x, this.props.camera.position.y, this.props.camera.position.z);
       this.camera.setViewOffset(this.width, this.height, this.props.perspective.viewOffset.x, this.props.perspective.viewOffset.y, this.width, this.height);
 
-      this.renderer = new Three.WebGLRenderer();
+      this.renderer = new Three.WebGLRenderer({
+        preserveDrawingBuffer: true
+      });
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(this.width, this.height);
       this.renderer.setClearColor(0xffffff, 1);

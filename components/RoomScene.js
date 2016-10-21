@@ -50,7 +50,9 @@ class RoomScene extends Component {
       this.width, this.height
     );
 
-    this.renderer = new Three.WebGLRenderer();
+    this.renderer = new Three.WebGLRenderer({
+      preserveDrawingBuffer: true
+    });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width,this.height );
     this.renderer.setClearColor(0xffffff, 1);
