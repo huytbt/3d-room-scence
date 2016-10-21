@@ -52,7 +52,7 @@ const roomScene = {
   walls: [
     // back wall
     {
-      position: {x:0, y:1500/2, z:1970},
+      position: {x:0, y:1500/2, z:1970}, //1970
       plan: 'z',
       direction: {
         x: 'rl',
@@ -65,10 +65,10 @@ const roomScene = {
       tiles,
       options: {
         selectedTile: null,
-        layout: 2,
+        layout: 0,
         grout: {
-          size: 15,
-          color: 0xffffff
+          size: 5,
+          color: 0xffffd2
         }
       }
     },
@@ -86,7 +86,12 @@ const roomScene = {
       tileRatio: 1/500,
       tiles,
       options: {
-        selectedTile: null
+        selectedTile: null,
+        layout: 0,
+        grout: {
+          size: 5,
+          color: 0xffffd2
+        }
       }
     },
     // background
@@ -103,7 +108,12 @@ const roomScene = {
       tileRatio: 1/500,
       tiles: backgroundTiles,
       options: {
-        selectedTile: null
+        selectedTile: null,
+        layout: 0,
+        grout: {
+          size: 5,
+          color: 0xffffd2
+        }
       }
     }
   ],
