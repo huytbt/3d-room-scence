@@ -52,7 +52,7 @@ const roomScene = {
   walls: [
     // back wall
     {
-      position: {x:0, y:1500/2, z:1970}, //1970
+      position: {x:0, y:1500/2, z:2000},
       plan: 'z',
       direction: {
         x: 'rl',
