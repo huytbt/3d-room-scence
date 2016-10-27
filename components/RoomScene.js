@@ -97,8 +97,14 @@ class RoomScene extends Component {
         }, callback);
       }
     ], () => {
+      let progress = 0;
+      this.props.onLoadingTextures &&
+        this.props.onLoadingTextures(images.length, progress, progress / images.length * 100);
       each(images, (image, callback) => {
         new Three.TextureLoader().load(image, (texture) => {
+          progress++;
+          this.props.onLoadingTextures &&
+            this.props.onLoadingTextures(images.length, progress, progress / images.length * 100);
           texture.minFilter = texture.magFilter = Three.LinearFilter;
           texture.mapping = Three.UVMapping;
           textures.push({
@@ -191,7 +197,7 @@ class RoomScene extends Component {
 
     this.referesh();
 
-    return callback();
+    callback && callback();
   }
 
   changeWallLayout(wallIndex, layout, callback) {
@@ -218,7 +224,7 @@ class RoomScene extends Component {
 
     this.referesh();
 
-    return callback();
+    callback && callback();
   }
 
   setWallGrout(wallIndex, groutSize, groutColor, callback) {
@@ -251,7 +257,7 @@ class RoomScene extends Component {
 
     this.referesh();
 
-    return callback();
+    callback && callback();
   }
 
   referesh() {
@@ -277,6 +283,7 @@ RoomScene.propTypes = {
   size: React.PropTypes.number,
   camera: React.PropTypes.object.isRequired,
   debug: React.PropTypes.bool,
+  onLoadingTextures: React.PropTypes.func,
   perspective: React.PropTypes.object.isRequired,
   walls: React.PropTypes.array.isRequired,
   layerImages: React.PropTypes.array.isRequired
