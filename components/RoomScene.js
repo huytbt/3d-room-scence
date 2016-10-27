@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import Tile from './Tile';
 import * as Three from 'three';
 import Wall from './Wall';
-import {eachSeries} from 'async';
+import {each, eachSeries, forEachOf, parallel} from 'async';
 
 class RoomScene extends Component {
   constructor(props) {
@@ -13,14 +13,20 @@ class RoomScene extends Component {
     this.room = null;
     this.walls = [];
     this.layerImages = [];
-    this.tiles = [];
   }
 
   componentDidMount () {
     this.initScene();
     this.loadWalls();
-    this.loadTilesTextures(() => {
-      this.loadLayerImages(() => {
+    this.loadAllTextures((textures) => {
+      parallel([
+        (callback) => {
+          this.loadTilesTextures(textures, callback);
+        },
+        (callback) => {
+          this.loadLayerImages(textures, callback);
+        }
+      ], () => {
         this.layerImages.map((layer) => {
           this.renderImage(layer);
         });
@@ -54,7 +60,7 @@ class RoomScene extends Component {
       preserveDrawingBuffer: true
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(this.width,this.height );
+    this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(0xffffff, 1);
 
     this.refs.threeContainer.appendChild(this.renderer.domElement);
@@ -68,19 +74,54 @@ class RoomScene extends Component {
     });
   }
 
-  loadTilesTextures(callback) {
-    eachSeries(this.walls, (wall, callback) => {
-      const tiles = [];
-      eachSeries(wall.tiles, (info, callback) => {
-        const texture = new Three.TextureLoader().load(info.image, (texture) => {
+  loadAllTextures(callback) {
+    const textures = [];
+    const images = [];
+    parallel([
+      (callback) => {
+        each(this.walls, (wall, callback) => {
+          each(wall.tiles, (tile, callback) => {
+            if (images.indexOf(tile.image) < 0) {
+              images.push(tile.image);
+            }
+            callback();
+          }, callback);
+        }, callback);
+      },
+      (callback) => {
+        each(this.props.layerImages, (element, callback) => {
+          if (images.indexOf(element.image) < 0) {
+            images.push(element.image);
+          }
+          callback();
+        }, callback);
+      }
+    ], () => {
+      each(images, (image, callback) => {
+        new Three.TextureLoader().load(image, (texture) => {
           texture.minFilter = texture.magFilter = Three.LinearFilter;
           texture.mapping = Three.UVMapping;
-
-          const tile = new Tile(info.width, info.height, wall.plan, wall.tileRatio, texture);
-          tiles.push(tile);
-
+          textures.push({
+            image,
+            texture
+          });
           callback();
         });
+      }, () => {
+        callback && callback(textures);
+      });
+    });
+  }
+
+  loadTilesTextures(textures, callback) {
+    each(this.walls, (wall, callback) => {
+      const tiles = [];
+      forEachOf(wall.tiles, (info, index, callback) => {
+        const texture = textures.find(x => x.image === info.image).texture;
+
+        const tile = new Tile(info.width, info.height, wall.plan, wall.tileRatio, texture);
+        tiles[index] = tile;
+        callback();
       }, () => {
         wall.tiles = tiles;
         callback();
@@ -88,15 +129,14 @@ class RoomScene extends Component {
     }, callback);
   }
 
-  loadLayerImages(callback) {
-    eachSeries(this.props.layerImages, (element, callback) => {
-      const texture = new Three.TextureLoader().load(element.image, (texture) => {
-        this.layerImages.push({
-          texture,
-          meta: element
-        });
-        callback();
-      });
+  loadLayerImages(textures, callback) {
+    forEachOf(this.props.layerImages, (element, index, callback) => {
+      const texture = textures.find(x => x.image === element.image).texture;
+      this.layerImages[index] = {
+        texture,
+        meta: element
+      };
+      callback();
     }, callback);
   }
 
