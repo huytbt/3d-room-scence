@@ -47,7 +47,6 @@ var RoomScene = function (_Component) {
     _this.room = null;
     _this.walls = [];
     _this.layerImages = [];
-    _this.tiles = [];
     return _this;
   }
 
@@ -58,8 +57,12 @@ var RoomScene = function (_Component) {
 
       this.initScene();
       this.loadWalls();
-      this.loadTilesTextures(function () {
-        _this2.loadLayerImages(function () {
+      this.loadAllTextures(function (textures) {
+        (0, _async.parallel)([function (callback) {
+          _this2.loadTilesTextures(textures, callback);
+        }, function (callback) {
+          _this2.loadLayerImages(textures, callback);
+        }], function () {
           _this2.layerImages.map(function (layer) {
             _this2.renderImage(layer);
           });
@@ -103,20 +106,61 @@ var RoomScene = function (_Component) {
       });
     }
   }, {
-    key: 'loadTilesTextures',
-    value: function loadTilesTextures(callback) {
-      (0, _async.eachSeries)(this.walls, function (wall, callback) {
-        var tiles = [];
-        (0, _async.eachSeries)(wall.tiles, function (info, callback) {
-          var texture = new Three.TextureLoader().load(info.image, function (texture) {
+    key: 'loadAllTextures',
+    value: function loadAllTextures(callback) {
+      var _this4 = this;
+
+      var textures = [];
+      var images = [];
+      (0, _async.parallel)([function (callback) {
+        (0, _async.each)(_this4.walls, function (wall, callback) {
+          (0, _async.each)(wall.tiles, function (tile, callback) {
+            if (images.indexOf(tile.image) < 0) {
+              images.push(tile.image);
+            }
+            callback();
+          }, callback);
+        }, callback);
+      }, function (callback) {
+        (0, _async.each)(_this4.props.layerImages, function (element, callback) {
+          if (images.indexOf(element.image) < 0) {
+            images.push(element.image);
+          }
+          callback();
+        }, callback);
+      }], function () {
+        var progress = 0;
+        _this4.props.onLoadingTextures && _this4.props.onLoadingTextures(images.length, progress, progress / images.length * 100);
+        (0, _async.each)(images, function (image, callback) {
+          new Three.TextureLoader().load(image, function (texture) {
+            progress++;
+            _this4.props.onLoadingTextures && _this4.props.onLoadingTextures(images.length, progress, progress / images.length * 100);
             texture.minFilter = texture.magFilter = Three.LinearFilter;
             texture.mapping = Three.UVMapping;
-
-            var tile = new _Tile2.default(info.width, info.height, wall.plan, wall.tileRatio, texture);
-            tiles.push(tile);
-
+            textures.push({
+              image: image,
+              texture: texture
+            });
             callback();
           });
+        }, function () {
+          callback && callback(textures);
+        });
+      });
+    }
+  }, {
+    key: 'loadTilesTextures',
+    value: function loadTilesTextures(textures, callback) {
+      (0, _async.each)(this.walls, function (wall, callback) {
+        var tiles = [];
+        (0, _async.forEachOf)(wall.tiles, function (info, index, callback) {
+          var texture = textures.find(function (x) {
+            return x.image === info.image;
+          }).texture;
+
+          var tile = new _Tile2.default(info.width, info.height, wall.plan, wall.tileRatio, texture);
+          tiles[index] = tile;
+          callback();
         }, function () {
           wall.tiles = tiles;
           callback();
@@ -125,28 +169,29 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'loadLayerImages',
-    value: function loadLayerImages(callback) {
-      var _this4 = this;
+    value: function loadLayerImages(textures, callback) {
+      var _this5 = this;
 
-      (0, _async.eachSeries)(this.props.layerImages, function (element, callback) {
-        var texture = new Three.TextureLoader().load(element.image, function (texture) {
-          _this4.layerImages.push({
-            texture: texture,
-            meta: element
-          });
-          callback();
-        });
+      (0, _async.forEachOf)(this.props.layerImages, function (element, index, callback) {
+        var texture = textures.find(function (x) {
+          return x.image === element.image;
+        }).texture;
+        _this5.layerImages[index] = {
+          texture: texture,
+          meta: element
+        };
+        callback();
       }, callback);
     }
   }, {
     key: 'renderScene',
     value: function renderScene() {
-      var _this5 = this;
+      var _this6 = this;
 
       this.walls.map(function (wall) {
         wall.mount();
         wall.mountedTiles.map(function (tile) {
-          _this5.room.add(tile);
+          _this6.room.add(tile);
         });
       });
 
@@ -169,7 +214,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'changeWallTile',
     value: function changeWallTile(wallIndex, tileIndex, callback) {
-      var _this6 = this;
+      var _this7 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -181,7 +226,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this6.room.remove(tile);
+        _this7.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -189,17 +234,17 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this6.room.add(tile);
+        _this7.room.add(tile);
       });
 
       this.referesh();
 
-      return callback();
+      callback && callback();
     }
   }, {
     key: 'changeWallLayout',
     value: function changeWallLayout(wallIndex, layout, callback) {
-      var _this7 = this;
+      var _this8 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -211,7 +256,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this7.room.remove(tile);
+        _this8.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -219,17 +264,17 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this7.room.add(tile);
+        _this8.room.add(tile);
       });
 
       this.referesh();
 
-      return callback();
+      callback && callback();
     }
   }, {
     key: 'setWallGrout',
     value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
-      var _this8 = this;
+      var _this9 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -244,7 +289,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this8.room.remove(tile);
+        _this9.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -255,12 +300,12 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this8.room.add(tile);
+        _this9.room.add(tile);
       });
 
       this.referesh();
 
-      return callback();
+      callback && callback();
     }
   }, {
     key: 'referesh',
@@ -291,6 +336,7 @@ RoomScene.propTypes = {
   size: _react2.default.PropTypes.number,
   camera: _react2.default.PropTypes.object.isRequired,
   debug: _react2.default.PropTypes.bool,
+  onLoadingTextures: _react2.default.PropTypes.func,
   perspective: _react2.default.PropTypes.object.isRequired,
   walls: _react2.default.PropTypes.array.isRequired,
   layerImages: _react2.default.PropTypes.array.isRequired
