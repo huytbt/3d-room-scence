@@ -173,13 +173,23 @@ class RoomScene extends Component {
     this.scene.add(image);
   }
 
+  reset(callback) {
+    forEachOf(this.walls, (wall, wallIndex, callback) => {
+      parallel([
+        (callback) => { this.changeWallTile(wallIndex, null, callback); },
+        (callback) => { this.changeWallLayout(wallIndex, 0, callback); },
+        (callback) => { this.setWallGrout(wallIndex, 0, 0xffffff, callback); },
+      ], callback);
+    }, callback);
+  }
+
   changeWallTile(wallIndex, tileIndex, callback) {
     const wall = this.walls[wallIndex];
 
     if (wall === undefined) {
       return callback(new Error('Invalid wall index.'));
     }
-    if (wall.tiles[tileIndex] === undefined) {
+    if (tileIndex !== null && wall.tiles[tileIndex] === undefined) {
       return callback(new Error('Invalid tile index.'));
     }
 
