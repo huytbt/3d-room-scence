@@ -212,38 +212,23 @@ var RoomScene = function (_Component) {
       this.scene.add(image);
     }
   }, {
-    key: 'changeWallTile',
-    value: function changeWallTile(wallIndex, tileIndex, callback) {
+    key: 'reset',
+    value: function reset(callback) {
       var _this7 = this;
 
-      var wall = this.walls[wallIndex];
-
-      if (wall === undefined) {
-        return callback(new Error('Invalid wall index.'));
-      }
-      if (wall.tiles[tileIndex] === undefined) {
-        return callback(new Error('Invalid tile index.'));
-      }
-
-      wall.mountedTiles.map(function (tile) {
-        _this7.room.remove(tile);
-      });
-      wall.mountedTiles = [];
-
-      wall.options.selectedTile = tileIndex;
-
-      wall.mount();
-      wall.mountedTiles.map(function (tile) {
-        _this7.room.add(tile);
-      });
-
-      this.referesh();
-
-      callback && callback();
+      (0, _async.forEachOf)(this.walls, function (wall, wallIndex, callback) {
+        (0, _async.parallel)([function (callback) {
+          _this7.changeWallTile(wallIndex, null, callback);
+        }, function (callback) {
+          _this7.changeWallLayout(wallIndex, 0, callback);
+        }, function (callback) {
+          _this7.setWallGrout(wallIndex, 0, 0xffffff, callback);
+        }], callback);
+      }, callback);
     }
   }, {
-    key: 'changeWallLayout',
-    value: function changeWallLayout(wallIndex, layout, callback) {
+    key: 'changeWallTile',
+    value: function changeWallTile(wallIndex, tileIndex, callback) {
       var _this8 = this;
 
       var wall = this.walls[wallIndex];
@@ -251,8 +236,8 @@ var RoomScene = function (_Component) {
       if (wall === undefined) {
         return callback(new Error('Invalid wall index.'));
       }
-      if (wall.supportLayouts.indexOf(layout) < 0) {
-        return callback(new Error('Invalid layout.'));
+      if (tileIndex !== null && wall.tiles[tileIndex] === undefined) {
+        return callback(new Error('Invalid tile index.'));
       }
 
       wall.mountedTiles.map(function (tile) {
@@ -260,7 +245,7 @@ var RoomScene = function (_Component) {
       });
       wall.mountedTiles = [];
 
-      wall.options.layout = layout;
+      wall.options.selectedTile = tileIndex;
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
@@ -272,9 +257,39 @@ var RoomScene = function (_Component) {
       callback && callback();
     }
   }, {
+    key: 'changeWallLayout',
+    value: function changeWallLayout(wallIndex, layout, callback) {
+      var _this9 = this;
+
+      var wall = this.walls[wallIndex];
+
+      if (wall === undefined) {
+        return callback(new Error('Invalid wall index.'));
+      }
+      if (wall.supportLayouts.indexOf(layout) < 0) {
+        return callback(new Error('Invalid layout.'));
+      }
+
+      wall.mountedTiles.map(function (tile) {
+        _this9.room.remove(tile);
+      });
+      wall.mountedTiles = [];
+
+      wall.options.layout = layout;
+
+      wall.mount();
+      wall.mountedTiles.map(function (tile) {
+        _this9.room.add(tile);
+      });
+
+      this.referesh();
+
+      callback && callback();
+    }
+  }, {
     key: 'setWallGrout',
     value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
-      var _this9 = this;
+      var _this10 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -289,7 +304,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this9.room.remove(tile);
+        _this10.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -300,7 +315,7 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this9.room.add(tile);
+        _this10.room.add(tile);
       });
 
       this.referesh();

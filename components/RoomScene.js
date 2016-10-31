@@ -178,7 +178,7 @@ class RoomScene extends Component {
       parallel([
         (callback) => { this.changeWallTile(wallIndex, null, callback); },
         (callback) => { this.changeWallLayout(wallIndex, 0, callback); },
-        (callback) => { this.setWallGrout(wallIndex, 0, 0xffffff, callback); },
+        (callback) => { this.setWallGrout(wallIndex, 0, 0xffffff, callback); }
       ], callback);
     }, callback);
   }
