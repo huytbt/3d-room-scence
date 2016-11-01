@@ -205,7 +205,7 @@ class RoomScene extends Component {
       this.room.add(tile);
     });
 
-    this.referesh();
+    this.refresh();
 
     callback && callback();
   }
@@ -232,7 +232,7 @@ class RoomScene extends Component {
       this.room.add(tile);
     });
 
-    this.referesh();
+    this.refresh();
 
     callback && callback();
   }
@@ -265,17 +265,18 @@ class RoomScene extends Component {
       this.room.add(tile);
     });
 
-    this.referesh();
+    this.refresh();
 
     callback && callback();
   }
 
-  referesh() {
+  refresh() {
     this.renderer.render(this.scene, this.camera);
   }
 
   set size(size) {
     this.renderer.setSize(size, size / (16/9));
+    this.refresh();
   }
 
   get width() {

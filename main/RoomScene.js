@@ -252,7 +252,7 @@ var RoomScene = function (_Component) {
         _this8.room.add(tile);
       });
 
-      this.referesh();
+      this.refresh();
 
       callback && callback();
     }
@@ -282,7 +282,7 @@ var RoomScene = function (_Component) {
         _this9.room.add(tile);
       });
 
-      this.referesh();
+      this.refresh();
 
       callback && callback();
     }
@@ -318,13 +318,13 @@ var RoomScene = function (_Component) {
         _this10.room.add(tile);
       });
 
-      this.referesh();
+      this.refresh();
 
       callback && callback();
     }
   }, {
-    key: 'referesh',
-    value: function referesh() {
+    key: 'refresh',
+    value: function refresh() {
       this.renderer.render(this.scene, this.camera);
     }
   }, {
@@ -336,6 +336,7 @@ var RoomScene = function (_Component) {
     key: 'size',
     set: function set(size) {
       this.renderer.setSize(size, size / (16 / 9));
+      this.refresh();
     }
   }, {
     key: 'width',
