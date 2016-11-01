@@ -274,6 +274,10 @@ class RoomScene extends Component {
     this.renderer.render(this.scene, this.camera);
   }
 
+  set size(size) {
+    this.renderer.setSize(size, size / (16/9));
+  }
+
   get width() {
     return this.props.size;
   }
