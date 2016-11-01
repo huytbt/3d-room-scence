@@ -333,6 +333,11 @@ var RoomScene = function (_Component) {
       return _react2.default.createElement('div', { className: 'room-scene-container', ref: 'threeContainer' });
     }
   }, {
+    key: 'size',
+    set: function set(size) {
+      this.renderer.setSize(size, size / (16 / 9));
+    }
+  }, {
     key: 'width',
     get: function get() {
       return this.props.size;
