@@ -62,6 +62,7 @@ class RoomScene extends Component {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(0xffffff, 1);
+    this.renderer.localClippingEnabled = true;
 
     this.refs.threeContainer.appendChild(this.renderer.domElement);
   }

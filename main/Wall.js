@@ -69,6 +69,7 @@ var Wall = function (_Object3D) {
         var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor);
         _tile.position = this.position;
         this.mountedTiles.push(_tile.mount());
+        _tile.clippingByWall(this);
         return this.mountedTiles;
       }
 
@@ -111,6 +112,8 @@ var Wall = function (_Object3D) {
 
           tiles.push(tile.mount());
 
+          tile.clippingByWall(_this2);
+
           if (_this2.options.grout.size) {
             _this2.pushGrouts(tiles, tile);
           }
@@ -127,9 +130,13 @@ var Wall = function (_Object3D) {
       var grout = new _Grout2.default(tile.width / tile.ratio, tile.height / tile.ratio, this.plan, tile.ratio, this.options.grout.size, this.options.grout.color);
       grout.position = Object.assign({}, tile.position);
       tiles.push(grout.mount('top'));
+      grout.clippingByWall(this);
       tiles.push(grout.mount('bottom'));
+      grout.clippingByWall(this);
       tiles.push(grout.mount('left'));
+      grout.clippingByWall(this);
       tiles.push(grout.mount('right'));
+      grout.clippingByWall(this);
     }
   }, {
     key: 'pushTileHorizontal',
