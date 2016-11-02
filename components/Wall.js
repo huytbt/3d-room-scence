@@ -102,9 +102,6 @@ class Wall extends Object3D {
 
   pushTileHorizontal(tile, startPoint, x, execute) {
     let tileWidth = tile.width;
-    if (this.options.grout.size) {
-      tileWidth += this.options.grout.size * 2;
-    }
 
     switch (this.direction.x) {
       case 'lr':
@@ -131,9 +128,6 @@ class Wall extends Object3D {
 
   pushTileVertical(tile, startPoint, y, execute) {
     let tileHeight = tile.height;
-    if (this.options.grout.size) {
-      tileHeight += this.options.grout.size * 2;
-    }
 
     switch (this.direction.y) {
       case 'tb':
