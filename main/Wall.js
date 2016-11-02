@@ -142,9 +142,6 @@ var Wall = function (_Object3D) {
     key: 'pushTileHorizontal',
     value: function pushTileHorizontal(tile, startPoint, x, execute) {
       var tileWidth = tile.width;
-      if (this.options.grout.size) {
-        tileWidth += this.options.grout.size * 2;
-      }
 
       switch (this.direction.x) {
         case 'lr':
@@ -172,9 +169,6 @@ var Wall = function (_Object3D) {
     key: 'pushTileVertical',
     value: function pushTileVertical(tile, startPoint, y, execute) {
       var tileHeight = tile.height;
-      if (this.options.grout.size) {
-        tileHeight += this.options.grout.size * 2;
-      }
 
       switch (this.direction.y) {
         case 'tb':
