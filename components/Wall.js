@@ -33,6 +33,7 @@ class Wall extends Object3D {
         this.plan, this.ratio, this.options.defaultColor);
       tile.position = this.position;
       this.mountedTiles.push(tile.mount());
+      tile.clippingByWall(this);
       return this.mountedTiles;
     }
 
@@ -72,6 +73,8 @@ class Wall extends Object3D {
 
         tiles.push(tile.mount());
 
+        tile.clippingByWall(this);
+
         if (this.options.grout.size) {
           this.pushGrouts(tiles, tile);
         }
@@ -88,9 +91,13 @@ class Wall extends Object3D {
       this.plan, tile.ratio, this.options.grout.size, this.options.grout.color);
     grout.position = Object.assign({}, tile.position);
     tiles.push(grout.mount('top'));
+    grout.clippingByWall(this);
     tiles.push(grout.mount('bottom'));
+    grout.clippingByWall(this);
     tiles.push(grout.mount('left'));
+    grout.clippingByWall(this);
     tiles.push(grout.mount('right'));
+    grout.clippingByWall(this);
   }
 
   pushTileHorizontal(tile, startPoint, x, execute) {

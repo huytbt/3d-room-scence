@@ -58,13 +58,13 @@ const roomScene = {
         x: 'rl',
         y: 'bt'
       },
-      width: 2300,
+      width: 2400,
       height: 1500,
       ratio: 1/250,
       tileRatio: 1/500,
       tiles,
       options: {
-        selectedTile: 1,
+        selectedTile: null,
         layout: 1,
         grout: {
           size: 5,
@@ -74,7 +74,7 @@ const roomScene = {
     },
     // right wall
     {
-      position: {x:2300/2, y:1500/2, z:3000},
+      position: {x:2400/2, y:1500/2, z:3000},
       plan: 'x',
       direction: {
         x: 'lr',
@@ -102,7 +102,7 @@ const roomScene = {
         x: 'rl',
         y: 'bt'
       },
-      width: 2300,
+      width: 2400,
       height: 2000,
       ratio: 1/250,
       tileRatio: 1/500,

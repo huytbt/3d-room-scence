@@ -49,8 +49,8 @@ class Grout extends Object3D {
       }
     }
 
-    const material = new Three.MeshBasicMaterial( {color: this.texture, transparent: true, opacity: 0.75} );
-    const grout = new Three.Mesh(boxGeometry, material);
+    this.material = new Three.MeshBasicMaterial( {color: this.texture, transparent: true, opacity: 0.75} );
+    const grout = new Three.Mesh(boxGeometry, this.material);
     grout.position.set(this.position.x, this.position.y, this.position.z);
 
     this.position = resetPosition;

@@ -52,14 +52,13 @@ var Tile = function (_Object3D) {
           break;
       }
 
-      var material = null;
       if (typeof this.texture === 'number') {
-        material = new Three.MeshBasicMaterial({ color: this.texture });
+        this.material = new Three.MeshBasicMaterial({ color: this.texture });
       } else {
-        material = new Three.MeshBasicMaterial({ map: this.texture, transparent: false, opacity: 1 });
+        this.material = new Three.MeshBasicMaterial({ map: this.texture, transparent: false, opacity: 1 });
       }
 
-      var tile = new Three.Mesh(boxGeometry, material);
+      var tile = new Three.Mesh(boxGeometry, this.material);
       tile.position.set(this.position.x, this.position.y, this.position.z);
 
       return tile;

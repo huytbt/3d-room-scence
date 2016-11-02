@@ -3,8 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _three = require('three');
+
+var Three = _interopRequireWildcard(_three);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -19,9 +26,62 @@ var Object3D = function () {
 
     this.width *= this.ratio;
     this.height *= this.ratio;
+
+    this.material = null;
   }
 
   _createClass(Object3D, [{
+    key: 'clippingByWall',
+
+
+    /**
+     * Clipping around by wall
+     * @param Wall wall
+     */
+    value: function clippingByWall(wall) {
+      if (!this.material.clippingPlanes) {
+        this.material.clippingPlanes = [];
+      }
+
+      var localPlane = null;
+
+      switch (this.plan) {
+        case 'x':
+          localPlane = new Three.Plane(new Three.Vector3(0, 0, -1), wall.width / 2 + wall.position.z);
+          this.material.clippingPlanes.push(localPlane);
+          localPlane = new Three.Plane(new Three.Vector3(0, 0, 1), wall.width / 2 - wall.position.z);
+          this.material.clippingPlanes.push(localPlane);
+
+          localPlane = new Three.Plane(new Three.Vector3(0, -1, 0), wall.height / 2 + wall.position.y);
+          this.material.clippingPlanes.push(localPlane);
+          localPlane = new Three.Plane(new Three.Vector3(0, 1, 0), wall.height / 2 - wall.position.y);
+          this.material.clippingPlanes.push(localPlane);
+          break;
+        case 'y':
+          localPlane = new Three.Plane(new Three.Vector3(1, 0, 0), wall.width / 2 - wall.position.x);
+          this.material.clippingPlanes.push(localPlane);
+          localPlane = new Three.Plane(new Three.Vector3(-1, 0, 0), wall.width / 2 + wall.position.x);
+          this.material.clippingPlanes.push(localPlane);
+
+          localPlane = new Three.Plane(new Three.Vector3(0, 0, -1), wall.height / 2 + wall.position.z);
+          this.material.clippingPlanes.push(localPlane);
+          localPlane = new Three.Plane(new Three.Vector3(0, 0, 1), wall.height / 2 - wall.position.z);
+          this.material.clippingPlanes.push(localPlane);
+          break;
+        case 'z':
+          localPlane = new Three.Plane(new Three.Vector3(1, 0, 0), wall.width / 2 - wall.position.x);
+          this.material.clippingPlanes.push(localPlane);
+          localPlane = new Three.Plane(new Three.Vector3(-1, 0, 0), wall.width / 2 + wall.position.x);
+          this.material.clippingPlanes.push(localPlane);
+
+          localPlane = new Three.Plane(new Three.Vector3(0, -1, 0), wall.height / 2 + wall.position.y);
+          this.material.clippingPlanes.push(localPlane);
+          localPlane = new Three.Plane(new Three.Vector3(0, 1, 0), wall.height / 2 - wall.position.y);
+          this.material.clippingPlanes.push(localPlane);
+          break;
+      }
+    }
+  }, {
     key: 'points',
     get: function get() {
       var points = [];

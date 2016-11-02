@@ -1,3 +1,5 @@
+import * as Three from 'three';
+
 export default class Object3D {
   constructor(width, height, plan, ratio) {
     this.width = width;
@@ -7,6 +9,8 @@ export default class Object3D {
 
     this.width *= this.ratio;
     this.height *= this.ratio;
+
+    this.material = null;
   }
 
   get points() {
@@ -40,5 +44,53 @@ export default class Object3D {
     }
 
     return points;
+  }
+
+  /**
+   * Clipping around by wall
+   * @param Wall wall
+   */
+  clippingByWall(wall) {
+    if (!this.material.clippingPlanes) {
+      this.material.clippingPlanes = [];
+    }
+
+    let localPlane = null;
+
+    switch (this.plan) {
+      case 'x':
+        localPlane = new Three.Plane(new Three.Vector3(0, 0, -1), wall.width/2 + wall.position.z);
+        this.material.clippingPlanes.push(localPlane);
+        localPlane = new Three.Plane(new Three.Vector3(0, 0, 1), wall.width/2 - wall.position.z);
+        this.material.clippingPlanes.push(localPlane);
+
+        localPlane = new Three.Plane(new Three.Vector3(0, -1, 0), wall.height/2 + wall.position.y);
+        this.material.clippingPlanes.push(localPlane);
+        localPlane = new Three.Plane(new Three.Vector3(0, 1, 0), wall.height/2 - wall.position.y);
+        this.material.clippingPlanes.push(localPlane);
+        break;
+      case 'y':
+        localPlane = new Three.Plane(new Three.Vector3(1, 0, 0), wall.width/2 - wall.position.x);
+        this.material.clippingPlanes.push(localPlane);
+        localPlane = new Three.Plane(new Three.Vector3(-1, 0, 0), wall.width/2 + wall.position.x);
+        this.material.clippingPlanes.push(localPlane);
+
+        localPlane = new Three.Plane(new Three.Vector3(0, 0, -1), wall.height/2 + wall.position.z);
+        this.material.clippingPlanes.push(localPlane);
+        localPlane = new Three.Plane(new Three.Vector3(0, 0, 1), wall.height/2 - wall.position.z);
+        this.material.clippingPlanes.push(localPlane);
+        break;
+      case 'z':
+        localPlane = new Three.Plane(new Three.Vector3(1, 0, 0), wall.width/2 - wall.position.x);
+        this.material.clippingPlanes.push(localPlane);
+        localPlane = new Three.Plane(new Three.Vector3(-1, 0, 0), wall.width/2 + wall.position.x);
+        this.material.clippingPlanes.push(localPlane);
+
+        localPlane = new Three.Plane(new Three.Vector3(0, -1, 0), wall.height/2 + wall.position.y);
+        this.material.clippingPlanes.push(localPlane);
+        localPlane = new Three.Plane(new Three.Vector3(0, 1, 0), wall.height/2 - wall.position.y);
+        this.material.clippingPlanes.push(localPlane);
+        break;
+    }
   }
 }
