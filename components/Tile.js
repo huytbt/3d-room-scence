@@ -7,17 +7,18 @@ class Tile extends Object3D {
     this.texture = texture;
   }
 
-  mount() {
+  mount(groutSize) {
+    const thick = 0;
     let boxGeometry = null;
     switch (this.plan) {
       case 'x':
-        boxGeometry = new Three.BoxGeometry(1/10, this.height, this.width);
+        boxGeometry = new Three.BoxGeometry(thick, this.height - 2 * groutSize, this.width - 2 * groutSize);
         break;
       case 'y':
-        boxGeometry = new Three.BoxGeometry(this.width, 1/10, this.height);
+        boxGeometry = new Three.BoxGeometry(this.width - 2 * groutSize, thick, this.height - 2 * groutSize);
         break;
       case 'z':
-        boxGeometry = new Three.BoxGeometry(this.width, this.height, 1/10);
+        boxGeometry = new Three.BoxGeometry(this.width - 2 * groutSize, this.height - 2 * groutSize, thick);
         break;
     }
 
