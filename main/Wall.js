@@ -35,6 +35,28 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Wall = function (_Object3D) {
   _inherits(Wall, _Object3D);
 
+  _createClass(Wall, null, [{
+    key: 'LAYOUT_GRID',
+    get: function get() {
+      return 0;
+    }
+  }, {
+    key: 'LAYOUT_BRICK_HORIZONTAL',
+    get: function get() {
+      return 1;
+    }
+  }, {
+    key: 'LAYOUT_BRICK_VERTICAL',
+    get: function get() {
+      return 2;
+    }
+  }, {
+    key: 'LAYOUT_CHECKERBOARD',
+    get: function get() {
+      return 3;
+    }
+  }]);
+
   function Wall(position, plan, direction, width, height, ratio, tileRatio, tiles, options) {
     _classCallCheck(this, Wall);
 
@@ -46,13 +68,18 @@ var Wall = function (_Object3D) {
     _this.tiles = tiles || [];
     _this.options = Object.assign({
       selectedTile: null,
+      checkerboardSelectedTile: null,
       defaultColor: 0xffffff,
       layout: 0,
       grout: {}
     }, options);
     _this.grout = _this.options.grout;
 
-    _this.supportLayouts = [0, 1, 2];
+    _this.supportLayouts = [Wall.LAYOUT_GRID, // grid (default)
+    Wall.LAYOUT_BRICK_HORIZONTAL, // brick by row
+    Wall.LAYOUT_BRICK_VERTICAL, // brick by column
+    Wall.LAYOUT_CHECKERBOARD // checkerboard
+    ];
 
     _this.position.x *= _this.ratio;
     _this.position.y *= _this.ratio;
@@ -73,8 +100,7 @@ var Wall = function (_Object3D) {
         return this.mountedTiles;
       }
 
-      var tile = this.tiles[this.options.selectedTile];
-      tile.plan = this.plan;
+      var tile = this.selectedTile;
 
       switch (this.plan) {
         case 'x':
@@ -102,13 +128,22 @@ var Wall = function (_Object3D) {
           tile.position = Object.assign({}, startPoint);
 
           // add tiles by layout: brick horizontal
-          if (_this2.options.layout === 1 && cell.y % 2 === 0) {
+          if (_this2.options.layout === Wall.LAYOUT_BRICK_HORIZONTAL && cell.y % 2 === 0) {
             tile.position[x] = tile.position[x] + tile.width / 2 * (_this2.direction.x === 'lr' ? -1 : 1);
           }
           // add tiles by layout: brick vertical
-          else if (_this2.options.layout === 2 && cell.x % 2 === 0) {
+          else if (_this2.options.layout === Wall.LAYOUT_BRICK_VERTICAL && cell.x % 2 === 0) {
               tile.position[y] = tile.position[y] + tile.height / 2 * (_this2.direction.x === 'bt' ? -1 : 1);
             }
+            // add tiles by layout: checkerboard
+            else if (_this2.options.layout === Wall.LAYOUT_CHECKERBOARD) {
+                if ((cell.x + cell.y) % 2 === 0) {
+                  tile = _this2.checkerboardSelectedTile;
+                } else {
+                  tile = _this2.selectedTile;
+                }
+                tile.position = Object.assign({}, startPoint);
+              }
 
           tiles.push(tile.mount(_this2.options.grout.size));
 
@@ -191,6 +226,26 @@ var Wall = function (_Object3D) {
           }
           break;
       }
+    }
+  }, {
+    key: 'selectedTile',
+    get: function get() {
+      var tile = this.tiles[this.options.selectedTile];
+      tile.plan = this.plan;
+
+      return tile;
+    }
+  }, {
+    key: 'checkerboardSelectedTile',
+    get: function get() {
+      if (this.options.checkerboardSelectedTile === null) {
+        return this.selectedTile;
+      }
+
+      var tile = this.tiles[this.options.checkerboardSelectedTile];
+      tile.plan = this.plan;
+
+      return tile;
     }
   }, {
     key: 'grout',

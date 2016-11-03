@@ -194,6 +194,16 @@ class RoomScene extends Component {
       return callback(new Error('Invalid tile index.'));
     }
 
+    if (wall.options.layout === Wall.LAYOUT_CHECKERBOARD) {
+      const isDifferenceTileSize = wall.options.checkerboardSelectedTile !== null &&
+        (wall.tiles[tileIndex].width !== wall.tiles[wall.options.checkerboardSelectedTile].width ||
+          wall.tiles[tileIndex].height !== wall.tiles[wall.options.checkerboardSelectedTile].height);
+      if (isDifferenceTileSize) {
+        return callback(new Error('Just select tile same size with current tile in checkerboard layout.'));
+      }
+      wall.options.checkerboardSelectedTile = wall.options.selectedTile;
+    }
+
     wall.mountedTiles.map((tile) => {
       this.room.remove(tile);
     });
@@ -227,6 +237,10 @@ class RoomScene extends Component {
     wall.mountedTiles = [];
 
     wall.options.layout = layout;
+
+    if (wall.options.layout !== Wall.LAYOUT_CHECKERBOARD) {
+      wall.options.checkerboardSelectedTile = null;
+    }
 
     wall.mount();
     wall.mountedTiles.map((tile) => {
