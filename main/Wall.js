@@ -110,7 +110,7 @@ var Wall = function (_Object3D) {
               tile.position[y] = tile.position[y] + tile.height / 2 * (_this2.direction.x === 'bt' ? -1 : 1);
             }
 
-          tiles.push(tile.mount());
+          tiles.push(tile.mount(_this2.options.grout.size));
 
           tile.clippingByWall(_this2);
 

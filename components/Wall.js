@@ -71,7 +71,7 @@ class Wall extends Object3D {
           tile.position[y] = tile.position[y] + tile.height/2 * (this.direction.x === 'bt' ? -1 : 1);
         }
 
-        tiles.push(tile.mount());
+        tiles.push(tile.mount(this.options.grout.size));
 
         tile.clippingByWall(this);
 
@@ -101,7 +101,7 @@ class Wall extends Object3D {
   }
 
   pushTileHorizontal(tile, startPoint, x, execute) {
-    let tileWidth = tile.width;
+    const tileWidth = tile.width;
 
     switch (this.direction.x) {
       case 'lr':
@@ -127,7 +127,7 @@ class Wall extends Object3D {
   }
 
   pushTileVertical(tile, startPoint, y, execute) {
-    let tileHeight = tile.height;
+    const tileHeight = tile.height;
 
     switch (this.direction.y) {
       case 'tb':
