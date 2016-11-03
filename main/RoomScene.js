@@ -241,6 +241,14 @@ var RoomScene = function (_Component) {
         return callback(new Error('Invalid tile index.'));
       }
 
+      if (wall.options.layout === _Wall2.default.LAYOUT_CHECKERBOARD) {
+        var isDifferenceTileSize = wall.options.checkerboardSelectedTile !== null && (wall.tiles[tileIndex].width !== wall.tiles[wall.options.checkerboardSelectedTile].width || wall.tiles[tileIndex].height !== wall.tiles[wall.options.checkerboardSelectedTile].height);
+        if (isDifferenceTileSize) {
+          return callback(new Error('Just select tile same size with current tile in checkerboard layout.'));
+        }
+        wall.options.checkerboardSelectedTile = wall.options.selectedTile;
+      }
+
       wall.mountedTiles.map(function (tile) {
         _this8.room.remove(tile);
       });
@@ -277,6 +285,10 @@ var RoomScene = function (_Component) {
       wall.mountedTiles = [];
 
       wall.options.layout = layout;
+
+      if (wall.options.layout !== _Wall2.default.LAYOUT_CHECKERBOARD) {
+        wall.options.checkerboardSelectedTile = null;
+      }
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
