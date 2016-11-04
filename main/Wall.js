@@ -93,7 +93,7 @@ var Wall = function (_Object3D) {
     key: 'mount',
     value: function mount() {
       if (this.options.selectedTile === null) {
-        var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor);
+        var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor, {});
         _tile.position = this.position;
         this.mountedTiles.push(_tile.mount());
         _tile.clippingByWall(this);

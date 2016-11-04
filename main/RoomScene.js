@@ -159,7 +159,7 @@ var RoomScene = function (_Component) {
             return x.image === info.image;
           }).texture;
 
-          var tile = new _Tile2.default(info.width, info.height, wall.plan, wall.tileRatio, texture);
+          var tile = new _Tile2.default(info.width, info.height, wall.plan, wall.tileRatio, texture, info);
           tiles[index] = tile;
           callback();
         }, function () {

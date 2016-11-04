@@ -27,12 +27,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Tile = function (_Object3D) {
   _inherits(Tile, _Object3D);
 
-  function Tile(width, height, plan, ratio, texture) {
+  function Tile(width, height, plan, ratio, texture, meta) {
     _classCallCheck(this, Tile);
 
     var _this = _possibleConstructorReturn(this, (Tile.__proto__ || Object.getPrototypeOf(Tile)).call(this, width, height, plan, ratio));
 
     _this.texture = texture;
+    _this.meta = meta;
     return _this;
   }
 

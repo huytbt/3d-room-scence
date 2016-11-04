@@ -59,7 +59,7 @@ class Wall extends Object3D {
   mount() {
     if (this.options.selectedTile === null) {
       const tile = new Tile(this.width / this.ratio, this.height / this.ratio,
-        this.plan, this.ratio, this.options.defaultColor);
+        this.plan, this.ratio, this.options.defaultColor, {});
       tile.position = this.position;
       this.mountedTiles.push(tile.mount());
       tile.clippingByWall(this);
