@@ -195,13 +195,16 @@ class RoomScene extends Component {
     }
 
     if (wall.options.layout === Wall.LAYOUT_CHECKERBOARD) {
-      const isDifferenceTileSize = wall.options.checkerboardSelectedTile !== null &&
+      const isDifferenceTileSize = wall.options.checkerboardSelectedTile !== null && tileIndex !== null &&
         (wall.tiles[tileIndex].width !== wall.tiles[wall.options.checkerboardSelectedTile].width ||
           wall.tiles[tileIndex].height !== wall.tiles[wall.options.checkerboardSelectedTile].height);
       if (isDifferenceTileSize) {
         return callback(new Error('Just select tile same size with current tile in checkerboard layout.'));
       }
       wall.options.checkerboardSelectedTile = wall.options.selectedTile;
+      if (tileIndex === null) {
+        wall.options.checkerboardSelectedTile = null;
+      }
     }
 
     wall.mountedTiles.map((tile) => {
