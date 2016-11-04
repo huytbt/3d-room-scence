@@ -242,7 +242,7 @@ var RoomScene = function (_Component) {
       }
 
       if (wall.options.layout === _Wall2.default.LAYOUT_CHECKERBOARD) {
-        var isDifferenceTileSize = wall.options.checkerboardSelectedTile !== null && tileIndex !== null && (wall.tiles[tileIndex].width !== wall.tiles[wall.options.checkerboardSelectedTile].width || wall.tiles[tileIndex].height !== wall.tiles[wall.options.checkerboardSelectedTile].height);
+        var isDifferenceTileSize = wall.options.selectedTile !== null && tileIndex !== null && (wall.tiles[tileIndex].width !== wall.tiles[wall.options.selectedTile].width || wall.tiles[tileIndex].height !== wall.tiles[wall.options.selectedTile].height);
         if (isDifferenceTileSize) {
           return callback(new Error('Just select tile same size with current tile in checkerboard layout.'));
         }
