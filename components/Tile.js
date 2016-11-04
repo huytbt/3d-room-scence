@@ -2,9 +2,10 @@ import Object3D from './Object3D';
 import * as Three from 'three';
 
 class Tile extends Object3D {
-  constructor(width, height, plan, ratio, texture) {
+  constructor(width, height, plan, ratio, texture, meta) {
     super(width, height, plan, ratio);
     this.texture = texture;
+    this.meta = meta;
   }
 
   mount(groutSize) {

@@ -59,7 +59,7 @@ class Wall extends Object3D {
   mount() {
     if (this.options.selectedTile === null) {
       const tile = new Tile(this.width / this.ratio, this.height / this.ratio,
-        this.plan, this.ratio, this.options.defaultColor);
+        this.plan, this.ratio, this.options.defaultColor, {});
       tile.position = this.position;
       this.mountedTiles.push(tile.mount());
       tile.clippingByWall(this);
@@ -145,7 +145,7 @@ class Wall extends Object3D {
         // left to right
         startPoint[x] = this.points[0][x] - (-tileWidth + this.width) / 2;
         startPoint[x] -= tileWidth; // render more 1 tile
-        while (startPoint[x] < this.points[2][x] - (-tileWidth + this.width) / 2 + tileWidth) {
+        while (startPoint[x] < this.points[2][x] - (-tileWidth + this.width) / 2 + 2 * tileWidth) {
           execute();
           startPoint[x] += tileWidth;
         }
@@ -155,7 +155,7 @@ class Wall extends Object3D {
         // right to left
         startPoint[x] = this.points[2][x] - (tileWidth + this.width) / 2;
         startPoint[x] += tileWidth; // render more 1 tile
-        while (startPoint[x] > this.points[0][x] - (tileWidth + this.width) / 2 - tileWidth) {
+        while (startPoint[x] > this.points[0][x] - (tileWidth + this.width) / 2 - 2 * tileWidth) {
           execute();
           startPoint[x] -= tileWidth;
         }
@@ -171,7 +171,7 @@ class Wall extends Object3D {
         // top to bottom
         startPoint[y] = this.points[2][y] - (tileHeight + this.height) / 2;
         startPoint[y] += tileHeight; // render more 1 tile
-        while (startPoint[y] > this.points[0][y] - (tileHeight + this.height) / 2 - tileHeight){
+        while (startPoint[y] > this.points[0][y] - (tileHeight + this.height) / 2 - 2 * tileHeight){
           execute();
           startPoint[y] -= tileHeight;
         }
@@ -181,7 +181,7 @@ class Wall extends Object3D {
         // bottom to top
         startPoint[y] = this.points[0][y] - (-tileHeight + this.height) / 2;
         startPoint[y] -= tileHeight; // render more 1 tile
-        while (startPoint[y] < this.points[2][y] - (-tileHeight + this.height) / 2 + tileHeight) {
+        while (startPoint[y] < this.points[2][y] - (-tileHeight + this.height) / 2 + 2 * tileHeight) {
           execute();
           startPoint[y] += tileHeight;
         }

@@ -126,7 +126,7 @@ class RoomScene extends Component {
       forEachOf(wall.tiles, (info, index, callback) => {
         const texture = textures.find(x => x.image === info.image).texture;
 
-        const tile = new Tile(info.width, info.height, wall.plan, wall.tileRatio, texture);
+        const tile = new Tile(info.width, info.height, wall.plan, wall.tileRatio, texture, info);
         tiles[index] = tile;
         callback();
       }, () => {

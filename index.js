@@ -64,7 +64,7 @@ const roomScene = {
       tileRatio: 1/500,
       tiles,
       options: {
-        selectedTile: null,
+        selectedTile: 1,
         layout: 1,
         grout: {
           size: 5,
