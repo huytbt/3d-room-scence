@@ -40,7 +40,7 @@ var Grout = function (_Object3D) {
   _createClass(Grout, [{
     key: 'mount',
     value: function mount(location) {
-      var thick = 0;
+      var thick = 0.01;
       var resetPosition = Object.assign({}, this.position);
       var d = 1;
       if (location === 'bottom' || location === 'left') {
@@ -80,7 +80,7 @@ var Grout = function (_Object3D) {
         }
       }
 
-      this.material = new Three.MeshBasicMaterial({ color: this.texture, transparent: true, opacity: 0.75 });
+      this.material = new Three.MeshBasicMaterial({ color: this.texture, transparent: true, opacity: 0.4 });
       var grout = new Three.Mesh(boxGeometry, this.material);
       grout.position.set(this.position.x, this.position.y, this.position.z);
 
