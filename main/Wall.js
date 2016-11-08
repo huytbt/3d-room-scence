@@ -145,7 +145,7 @@ var Wall = function (_Object3D) {
                 tile.position = Object.assign({}, startPoint);
               }
 
-          tiles.push(tile.mount(_this2.options.grout.size));
+          tiles.push(tile.mount());
 
           tile.clippingByWall(_this2);
 
@@ -254,7 +254,7 @@ var Wall = function (_Object3D) {
         size: 0,
         color: 0xffffff
       }, groutOptions);
-      this.options.grout.size *= this.tileRatio;
+      this.options.grout.size *= 1 / 500;
     }
   }]);
 

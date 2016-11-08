@@ -44,13 +44,13 @@ var Tile = function (_Object3D) {
       var boxGeometry = null;
       switch (this.plan) {
         case 'x':
-          boxGeometry = new Three.BoxGeometry(thick, this.height - 2 * groutSize, this.width - 2 * groutSize);
+          boxGeometry = new Three.BoxGeometry(thick, this.height, this.width);
           break;
         case 'y':
-          boxGeometry = new Three.BoxGeometry(this.width - 2 * groutSize, thick, this.height - 2 * groutSize);
+          boxGeometry = new Three.BoxGeometry(this.width, thick, this.height);
           break;
         case 'z':
-          boxGeometry = new Three.BoxGeometry(this.width - 2 * groutSize, this.height - 2 * groutSize, thick);
+          boxGeometry = new Three.BoxGeometry(this.width, this.height, thick);
           break;
       }
 

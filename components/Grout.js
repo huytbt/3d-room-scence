@@ -9,7 +9,7 @@ class Grout extends Object3D {
   }
 
   mount(location) {
-    const thick = 0;
+    const thick = 0.01;
     const resetPosition = Object.assign({}, this.position);
     let d = 1;
     if (location === 'bottom' || location === 'left') {
@@ -49,7 +49,7 @@ class Grout extends Object3D {
       }
     }
 
-    this.material = new Three.MeshBasicMaterial( {color: this.texture, transparent: true, opacity: 0.75} );
+    this.material = new Three.MeshBasicMaterial( {color: this.texture, transparent: true, opacity: 0.4} );
     const grout = new Three.Mesh(boxGeometry, this.material);
     grout.position.set(this.position.x, this.position.y, this.position.z);
 

@@ -108,7 +108,7 @@ class Wall extends Object3D {
           tile.position = Object.assign({}, startPoint);
         }
 
-        tiles.push(tile.mount(this.options.grout.size));
+        tiles.push(tile.mount());
 
         tile.clippingByWall(this);
 
@@ -194,7 +194,7 @@ class Wall extends Object3D {
       size: 0,
       color: 0xffffff
     }, groutOptions);
-    this.options.grout.size *= this.tileRatio;
+    this.options.grout.size *= 1/500;
   }
 }
 
