@@ -8,6 +8,7 @@ class RoomScene extends Component {
   constructor(props) {
     super(props);
 
+    this._size = props.size;
     this.renderer = null;
     this.scene = null;
     this.room = null;
@@ -215,6 +216,10 @@ class RoomScene extends Component {
       return callback(new Error('Invalid tile index.'));
     }
 
+    if (wall.options.layout === Wall.LAYOUT_FREESTYLE) {
+      return this.changeFreeStyleTile(wallIndex, tileIndex, callback);
+    }
+
     if (wall.options.layout === Wall.LAYOUT_CHECKERBOARD) {
       const isDifferenceTileSize = wall.options.selectedTile !== null && tileIndex !== null &&
         (wall.tiles[tileIndex].width !== wall.tiles[wall.options.selectedTile].width ||
@@ -297,11 +302,14 @@ class RoomScene extends Component {
     callback && callback();
   }
 
-  changeFreeStyleTile(wallIndex, tileIndex) {
+  changeFreeStyleTile(wallIndex, tileIndex, callback) {
     const wall = this.walls[wallIndex];
 
     if (wall === undefined) {
-      return;
+      return callback(new Error('Invalid wall index.'));
+    }
+    if (tileIndex !== null && wall.tiles[tileIndex] === undefined) {
+      return callback(new Error('Invalid tile index.'));
     }
 
     this.walls.map((w) => {
@@ -312,6 +320,8 @@ class RoomScene extends Component {
     });
 
     this.initFreeRoom(wall.options.type);
+
+    callback && callback();
   }
 
   initFreeRoom(wallType) {
@@ -342,8 +352,8 @@ class RoomScene extends Component {
 
   onWindowMouseMove(event) {
     const mouse = {
-      x: (event.layerX / this.width) * 2 - 1,
-      y: - (event.layerY / this.height) * 2 + 1
+      x: event.layerX / this.width * 2 - 1,
+      y: -(event.layerY / this.height) * 2 + 1
     };
 
     const ray = new Three.Raycaster();
@@ -485,12 +495,13 @@ class RoomScene extends Component {
   }
 
   set size(size) {
+    this._size = size;
     this.renderer.setSize(size, size / (16/9));
     this.refresh();
   }
 
   get width() {
-    return this.props.size;
+    return this._size;
   }
 
   get height() {

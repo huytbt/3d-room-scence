@@ -174,7 +174,6 @@ var Wall = function (_Object3D) {
 
       mountedTiles.map(function (tile) {
         _this3.mountedTiles.push(tile);
-        tile.renderOrder = _this3.freeTileLevel;
       });
 
       return mountedTiles;
@@ -273,25 +272,25 @@ var Wall = function (_Object3D) {
       var mount = null;
 
       mount = grout.mount('top');
-      mount.renderOrder = tile.renderOrder;
+      mount.renderOrder = tile.renderOrder + 1;
       tiles.push(mount);
       mountedGrouts.push(mount);
       grout.clippingByWall(this);
 
       mount = grout.mount('bottom');
-      mount.renderOrder = tile.renderOrder;
+      mount.renderOrder = tile.renderOrder + 1;
       tiles.push(mount);
       mountedGrouts.push(mount);
       grout.clippingByWall(this);
 
       mount = grout.mount('left');
-      mount.renderOrder = tile.renderOrder;
+      mount.renderOrder = tile.renderOrder + 1;
       tiles.push(mount);
       mountedGrouts.push(mount);
       grout.clippingByWall(this);
 
       mount = grout.mount('right');
-      mount.renderOrder = tile.renderOrder;
+      mount.renderOrder = tile.renderOrder + 1;
       tiles.push(mount);
       mountedGrouts.push(mount);
       grout.clippingByWall(this);

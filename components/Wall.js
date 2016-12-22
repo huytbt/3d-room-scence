@@ -142,7 +142,6 @@ class Wall extends Object3D {
 
     mountedTiles.map((tile) => {
       this.mountedTiles.push(tile);
-      tile.renderOrder = this.freeTileLevel;
     });
 
     return mountedTiles;
@@ -234,25 +233,25 @@ class Wall extends Object3D {
     let mount = null;
 
     mount = grout.mount('top');
-    mount.renderOrder = tile.renderOrder;
+    mount.renderOrder = tile.renderOrder + 1;
     tiles.push(mount);
     mountedGrouts.push(mount);
     grout.clippingByWall(this);
 
     mount = grout.mount('bottom');
-    mount.renderOrder = tile.renderOrder;
+    mount.renderOrder = tile.renderOrder + 1;
     tiles.push(mount);
     mountedGrouts.push(mount);
     grout.clippingByWall(this);
 
     mount = grout.mount('left');
-    mount.renderOrder = tile.renderOrder;
+    mount.renderOrder = tile.renderOrder + 1;
     tiles.push(mount);
     mountedGrouts.push(mount);
     grout.clippingByWall(this);
 
     mount = grout.mount('right');
-    mount.renderOrder = tile.renderOrder;
+    mount.renderOrder = tile.renderOrder + 1;
     tiles.push(mount);
     mountedGrouts.push(mount);
     grout.clippingByWall(this);

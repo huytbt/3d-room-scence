@@ -42,6 +42,7 @@ var RoomScene = function (_Component) {
 
     var _this = _possibleConstructorReturn(this, (RoomScene.__proto__ || Object.getPrototypeOf(RoomScene)).call(this, props));
 
+    _this._size = props.size;
     _this.renderer = null;
     _this.scene = null;
     _this.room = null;
@@ -264,6 +265,10 @@ var RoomScene = function (_Component) {
         return callback(new Error('Invalid tile index.'));
       }
 
+      if (wall.options.layout === _Wall2.default.LAYOUT_FREESTYLE) {
+        return this.changeFreeStyleTile(wallIndex, tileIndex, callback);
+      }
+
       if (wall.options.layout === _Wall2.default.LAYOUT_CHECKERBOARD) {
         var isDifferenceTileSize = wall.options.selectedTile !== null && tileIndex !== null && (wall.tiles[tileIndex].width !== wall.tiles[wall.options.selectedTile].width || wall.tiles[tileIndex].height !== wall.tiles[wall.options.selectedTile].height);
         if (isDifferenceTileSize) {
@@ -348,11 +353,14 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'changeFreeStyleTile',
-    value: function changeFreeStyleTile(wallIndex, tileIndex) {
+    value: function changeFreeStyleTile(wallIndex, tileIndex, callback) {
       var wall = this.walls[wallIndex];
 
       if (wall === undefined) {
-        return;
+        return callback(new Error('Invalid wall index.'));
+      }
+      if (tileIndex !== null && wall.tiles[tileIndex] === undefined) {
+        return callback(new Error('Invalid tile index.'));
       }
 
       this.walls.map(function (w) {
@@ -363,6 +371,8 @@ var RoomScene = function (_Component) {
       });
 
       this.initFreeRoom(wall.options.type);
+
+      callback && callback();
     }
   }, {
     key: 'initFreeRoom',
@@ -550,13 +560,14 @@ var RoomScene = function (_Component) {
   }, {
     key: 'size',
     set: function set(size) {
+      this._size = size;
       this.renderer.setSize(size, size / (16 / 9));
       this.refresh();
     }
   }, {
     key: 'width',
     get: function get() {
-      return this.props.size;
+      return this._size;
     }
   }, {
     key: 'height',
