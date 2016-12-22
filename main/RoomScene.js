@@ -45,8 +45,14 @@ var RoomScene = function (_Component) {
     _this.renderer = null;
     _this.scene = null;
     _this.room = null;
+    _this.freeRoom = null;
+    _this.maskTiles = [];
     _this.walls = [];
     _this.layerImages = [];
+    _this.mouseState = null;
+    _this.handlerMouseMove = _this.onWindowMouseMove.bind(_this);
+    _this.handlerMouseUp = _this.onWindowMouseUp.bind(_this);
+    _this.handlerMouseDown = _this.onWindowMouseDown.bind(_this);
     return _this;
   }
 
@@ -75,12 +81,14 @@ var RoomScene = function (_Component) {
     key: 'initScene',
     value: function initScene() {
       this.room = new Three.Object3D();
+      this.freeRoom = new Three.Object3D();
       if (this.props.debug) {
         this.room.add(new Three.GridHelper(100, 50));
       }
 
       this.scene = new Three.Scene();
       this.scene.add(this.room);
+      this.scene.add(this.freeRoom);
 
       this.camera = new Three.PerspectiveCamera(this.props.perspective.fov, this.width / this.height, 1, 100000);
       this.camera.position.set(this.props.camera.position.x, this.props.camera.position.y, this.props.camera.position.z);
@@ -190,13 +198,28 @@ var RoomScene = function (_Component) {
       var _this6 = this;
 
       this.walls.map(function (wall) {
-        wall.mount();
-        wall.mountedTiles.map(function (tile) {
-          _this6.room.add(tile);
-        });
+        _this6.renderWall(wall, _this6.room);
       });
 
       this.renderer.render(this.scene, this.camera);
+    }
+  }, {
+    key: 'renderWall',
+    value: function renderWall(wall, toContainer, callback) {
+      var mountedTiles = wall.mount();
+      mountedTiles.map(function (tile) {
+        toContainer.add(tile);
+      });
+      callback && callback(mountedTiles);
+    }
+  }, {
+    key: 'renderWallMask',
+    value: function renderWallMask(wall, toContainer, callback) {
+      var mountedTiles = wall.mountMask();
+      mountedTiles.map(function (tile) {
+        toContainer.add(tile);
+      });
+      callback && callback(mountedTiles);
     }
   }, {
     key: 'renderImage',
@@ -293,19 +316,195 @@ var RoomScene = function (_Component) {
         wall.options.checkerboardSelectedTile = null;
       }
 
-      wall.mount();
-      wall.mountedTiles.map(function (tile) {
-        _this9.room.add(tile);
-      });
+      if (wall.options.layout === _Wall2.default.LAYOUT_FREESTYLE) {
+        this.changeFreeStyleTile(wallIndex, wall.options.selectedTile);
+        this.initFreeRoom();
+
+        this.renderer.domElement.addEventListener("mousemove", this.handlerMouseMove, true);
+        this.renderer.domElement.addEventListener("mouseup", this.handlerMouseUp, true);
+        this.renderer.domElement.addEventListener("mousedown", this.handlerMouseDown, true);
+      } else {
+        this.mouseState = null;
+        wall.mountedFreeTiles.map(function (tile) {
+          _this9.room.remove(tile);
+        });
+        wall.mountedFreeTiles = [];
+        if (this.INTERSECTED) {
+          this.INTERSECTED.material.color.setHex(this.INTERSECTED.currentHex);
+          this.INTERSECTED.renderOrder = -1;
+          this.INTERSECTED.material.transparent = false;
+        }
+
+        this.renderer.domElement.removeEventListener("mousemove", this.handlerMouseMove, true);
+        this.renderer.domElement.removeEventListener("mouseup", this.handlerMouseUp, true);
+        this.renderer.domElement.removeEventListener("mousedown", this.handlerMouseDown, true);
+      }
+
+      this.renderWall(wall, this.room);
 
       this.refresh();
 
       callback && callback();
     }
   }, {
+    key: 'changeFreeStyleTile',
+    value: function changeFreeStyleTile(wallIndex, tileIndex) {
+      var wall = this.walls[wallIndex];
+
+      if (wall === undefined) {
+        return;
+      }
+
+      this.walls.map(function (w) {
+        if (wall.options.type === w.options.type) {
+          w.options.freeStyleTile = tileIndex;
+          w.freeTileLevel++;
+        }
+      });
+
+      this.initFreeRoom(wall.options.type);
+    }
+  }, {
+    key: 'initFreeRoom',
+    value: function initFreeRoom(wallType) {
+      var _this10 = this;
+
+      // remove old marks
+      this.maskTiles.map(function (tile) {
+        _this10.freeRoom.remove(tile);
+      });
+      this.maskTiles = [];
+
+      // add mask tiles
+      this.walls.map(function (wall, wallIndex) {
+        if (wall.options.type !== wallType) {
+          return;
+        }
+
+        _this10.renderWallMask(wall, _this10.freeRoom, function (mountedTiles) {
+          mountedTiles.map(function (tile, index) {
+            _this10.maskTiles.push(tile);
+            tile.material.transparent = false;
+            tile.material.opacity = 1;
+            tile.maskIndex = wall.freeTileLevel * 10000 + index;
+            tile.wallIndex = wallIndex;
+            tile.renderOrder = 0;
+          });
+        });
+      });
+    }
+  }, {
+    key: 'onWindowMouseMove',
+    value: function onWindowMouseMove(event) {
+      var mouse = {
+        x: event.layerX / this.width * 2 - 1,
+        y: -(event.layerY / this.height) * 2 + 1
+      };
+
+      var ray = new Three.Raycaster();
+      ray.setFromCamera(mouse, this.camera);
+
+      var intersects = ray.intersectObjects(this.freeRoom.children);
+
+      if (intersects.length > 0) {
+        // if the closest object intersected is not the currently stored intersection object
+        if (intersects[0].object !== this.INTERSECTED && intersects[0].object.objectType === 'Tile') {
+          // restore previous intersection object (if it exists) to its original color
+          if (this.INTERSECTED) {
+            this.INTERSECTED.material.color.setHex(this.INTERSECTED.currentHex);
+            this.INTERSECTED.renderOrder = -1;
+            this.INTERSECTED.material.transparent = false;
+          }
+
+          // store reference to closest object as current intersection object
+          this.INTERSECTED = intersects[0].object;
+
+          // store color of closest object (for later restoration)
+          this.INTERSECTED.currentHex = this.INTERSECTED.material.color.getHex();
+          // set a new color for closest object
+          this.INTERSECTED.material.color.setHex(0x00BCD4);
+          this.INTERSECTED.material.opacity = 0.25;
+          this.INTERSECTED.material.transparent = true;
+          this.INTERSECTED.renderOrder = 999999;
+        }
+      } else // there are no intersections
+        {
+          // restore previous intersection object (if it exists) to its original color
+          if (this.INTERSECTED) {
+            this.INTERSECTED.material.color.setHex(this.INTERSECTED.currentHex);
+            this.INTERSECTED.renderOrder = 0;
+            this.INTERSECTED.material.transparent = false;
+          }
+          // remove previous intersection object reference
+          //     by setting current intersection object to "nothing"
+          this.INTERSECTED = null;
+        }
+
+      if (this.INTERSECTED && this.mouseState && this.mouseState.state === 'down' && this.mouseState.index !== this.INTERSECTED.maskIndex) {
+        this.mouseState.index = this.addFreeTile();
+      }
+
+      this.refresh();
+    }
+  }, {
+    key: 'onWindowMouseUp',
+    value: function onWindowMouseUp(event) {
+      this.mouseState = {
+        state: 'up',
+        index: -1
+      };
+    }
+  }, {
+    key: 'onWindowMouseDown',
+    value: function onWindowMouseDown(event) {
+      var maskIndex = this.addFreeTile();
+      this.mouseState = {
+        state: 'down',
+        index: maskIndex
+      };
+      this.refresh();
+    }
+  }, {
+    key: 'addFreeTile',
+    value: function addFreeTile() {
+      var _this11 = this;
+
+      if (!this.INTERSECTED) {
+        return;
+      }
+
+      var maskIndex = this.INTERSECTED.maskIndex;
+      var wall = this.walls[this.INTERSECTED.wallIndex];
+
+      if (wall === undefined) {
+        return maskIndex;
+      }
+
+      var duplicates = wall.mountedTiles.filter(function (tile) {
+        return tile.maskIndex === maskIndex;
+      });
+      if (duplicates.length) {
+        duplicates.map(function (tile) {
+          wall.removeDuplicatedFreeTiles(tile);
+          _this11.room.remove(tile);
+        });
+        return maskIndex;
+      }
+
+      var mountedTiles = wall.mountFreeTile(this.INTERSECTED);
+      mountedTiles.map(function (tile) {
+        tile.maskIndex = maskIndex;
+        _this11.room.add(tile);
+      });
+
+      this.refresh();
+
+      return maskIndex;
+    }
+  }, {
     key: 'setWallGrout',
     value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
-      var _this10 = this;
+      var _this12 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -320,7 +519,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this10.room.remove(tile);
+        _this12.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -331,7 +530,7 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this10.room.add(tile);
+        _this12.room.add(tile);
       });
 
       this.refresh();

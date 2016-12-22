@@ -55,6 +55,11 @@ var Wall = function (_Object3D) {
     get: function get() {
       return 3;
     }
+  }, {
+    key: 'LAYOUT_FREESTYLE',
+    get: function get() {
+      return 4;
+    }
   }]);
 
   function Wall(position, plan, direction, width, height, ratio, tileRatio, tiles, options) {
@@ -68,9 +73,11 @@ var Wall = function (_Object3D) {
     _this.tiles = tiles || [];
     _this.options = Object.assign({
       selectedTile: null,
+      freeStyleTile: null,
       checkerboardSelectedTile: null,
       defaultColor: 0xffffff,
       layout: 0,
+      type: 'wall',
       grout: {}
     }, options);
     _this.grout = _this.options.grout;
@@ -78,7 +85,8 @@ var Wall = function (_Object3D) {
     _this.supportLayouts = [Wall.LAYOUT_GRID, // grid (default)
     Wall.LAYOUT_BRICK_HORIZONTAL, // brick by row
     Wall.LAYOUT_BRICK_VERTICAL, // brick by column
-    Wall.LAYOUT_CHECKERBOARD // checkerboard
+    Wall.LAYOUT_CHECKERBOARD, // checkerboard
+    Wall.LAYOUT_FREESTYLE // freestyle
     ];
 
     _this.position.x *= _this.ratio;
@@ -86,71 +94,168 @@ var Wall = function (_Object3D) {
     _this.position.z *= _this.ratio;
 
     _this.mountedTiles = [];
+    _this.mountedFreeTiles = [];
+    _this.freeTileLevel = 10;
     return _this;
   }
 
   _createClass(Wall, [{
     key: 'mount',
     value: function mount() {
+      var _this2 = this;
+
+      var mountedTiles = [];
+
+      this.mountedFreeTiles.map(function (tile) {
+        mountedTiles.push(tile);
+        if (_this2.options.grout.size) {
+          var mountedGrouts = _this2.pushGrouts(mountedTiles, tile.originObject);
+          mountedGrouts.map(function (grout) {
+            grout.maskIndex = tile.maskIndex;
+          });
+        }
+      });
+
       if (this.options.selectedTile === null) {
         var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor, {});
         _tile.position = this.position;
-        this.mountedTiles.push(_tile.mount());
+        mountedTiles.push(_tile.mount());
         _tile.clippingByWall(this);
-        return this.mountedTiles;
+
+        mountedTiles.map(function (tile) {
+          _this2.mountedTiles.push(tile);
+        });
+
+        return mountedTiles;
       }
 
       var tile = this.selectedTile;
-
       switch (this.plan) {
         case 'x':
-          this.pushTile(this.mountedTiles, tile, 'z', 'y');
+          this.pushTile(mountedTiles, tile, 'z', 'y');
           break;
         case 'y':
-          this.pushTile(this.mountedTiles, tile, 'x', 'z');
+          this.pushTile(mountedTiles, tile, 'x', 'z');
           break;
         case 'z':
-          this.pushTile(this.mountedTiles, tile, 'x', 'y');
+          this.pushTile(mountedTiles, tile, 'x', 'y');
           break;
       }
 
-      return this.mountedTiles;
+      mountedTiles.map(function (tile) {
+        _this2.mountedTiles.push(tile);
+      });
+
+      return mountedTiles;
+    }
+  }, {
+    key: 'mountFreeTile',
+    value: function mountFreeTile(fromTile) {
+      var _this3 = this;
+
+      var mountedTiles = [];
+
+      var tile = new Three.Mesh(fromTile.geometry.clone(), fromTile.material.clone());
+      tile.material.color.setHex(fromTile.currentHex);
+      tile.material.transparent = false;
+      tile.material.depthTest = false;
+      tile.material.opacity = 1;
+      tile.position.set(fromTile.position.x, fromTile.position.y, fromTile.position.z);
+      tile.originObject = Object.assign({}, fromTile.originObject);
+      tile.originObject.position = tile.position;
+      tile.renderOrder = this.freeTileLevel;
+      mountedTiles.push(tile);
+
+      this.mountedFreeTiles.push(tile);
+
+      if (this.options.grout.size) {
+        this.pushGrouts(mountedTiles, tile.originObject);
+      }
+
+      mountedTiles.map(function (tile) {
+        _this3.mountedTiles.push(tile);
+        tile.renderOrder = _this3.freeTileLevel;
+      });
+
+      return mountedTiles;
+    }
+  }, {
+    key: 'mountMask',
+    value: function mountMask() {
+      var mountedTiles = [];
+      var tile = this.freeStyleTile;
+
+      switch (this.plan) {
+        case 'x':
+          this.pushTile(mountedTiles, tile, 'z', 'y', this.freeTileLevel, true);
+          break;
+        case 'y':
+          this.pushTile(mountedTiles, tile, 'x', 'z', this.freeTileLevel, true);
+          break;
+        case 'z':
+          this.pushTile(mountedTiles, tile, 'x', 'y', this.freeTileLevel, true);
+          break;
+      }
+
+      return mountedTiles;
+    }
+  }, {
+    key: 'removeDuplicatedFreeTiles',
+    value: function removeDuplicatedFreeTiles(tile) {
+      var _this4 = this;
+
+      this.mountedTiles.map(function (elm, index) {
+        if (tile === elm) {
+          _this4.mountedTiles.splice(index, 1);
+        }
+      });
+      this.mountedFreeTiles.map(function (elm, index) {
+        if (tile === elm) {
+          _this4.mountedFreeTiles.splice(index, 1);
+        }
+      });
     }
   }, {
     key: 'pushTile',
-    value: function pushTile(tiles, tile, x, y) {
-      var _this2 = this;
+    value: function pushTile(tiles, tile, x, y, order, isMask) {
+      var _this5 = this;
 
       var startPoint = this.points[0];
       var cell = { x: 0, y: 0 };
       this.pushTileVertical(tile, startPoint, y, function () {
-        _this2.pushTileHorizontal(tile, startPoint, x, function () {
+        _this5.pushTileHorizontal(tile, startPoint, x, function () {
           tile.position = Object.assign({}, startPoint);
 
           // add tiles by layout: brick horizontal
-          if (_this2.options.layout === Wall.LAYOUT_BRICK_HORIZONTAL && cell.y % 2 === 0) {
-            tile.position[x] = tile.position[x] + tile.width / 2 * (_this2.direction.x === 'lr' ? -1 : 1);
+          if (_this5.options.layout === Wall.LAYOUT_BRICK_HORIZONTAL && cell.y % 2 === 0) {
+            tile.position[x] = tile.position[x] + tile.width / 2 * (_this5.direction.x === 'lr' ? -1 : 1);
           }
           // add tiles by layout: brick vertical
-          else if (_this2.options.layout === Wall.LAYOUT_BRICK_VERTICAL && cell.x % 2 === 0) {
-              tile.position[y] = tile.position[y] + tile.height / 2 * (_this2.direction.x === 'bt' ? -1 : 1);
+          else if (_this5.options.layout === Wall.LAYOUT_BRICK_VERTICAL && cell.x % 2 === 0) {
+              tile.position[y] = tile.position[y] + tile.height / 2 * (_this5.direction.x === 'bt' ? -1 : 1);
             }
             // add tiles by layout: checkerboard
-            else if (_this2.options.layout === Wall.LAYOUT_CHECKERBOARD) {
+            else if (_this5.options.layout === Wall.LAYOUT_CHECKERBOARD) {
                 if ((cell.x + cell.y) % 2 === 0) {
-                  tile = _this2.checkerboardSelectedTile;
+                  tile = _this5.checkerboardSelectedTile;
                 } else {
-                  tile = _this2.selectedTile;
+                  tile = _this5.selectedTile;
                 }
                 tile.position = Object.assign({}, startPoint);
               }
 
+          if (order) {
+            tile.renderOrder = order;
+          } else {
+            tile.renderOrder = 1;
+          }
+
           tiles.push(tile.mount());
 
-          tile.clippingByWall(_this2);
+          tile.clippingByWall(_this5);
 
-          if (_this2.options.grout.size) {
-            _this2.pushGrouts(tiles, tile);
+          if (_this5.options.grout.size && !isMask) {
+            _this5.pushGrouts(tiles, tile);
           }
 
           cell.x++;
@@ -162,16 +267,36 @@ var Wall = function (_Object3D) {
   }, {
     key: 'pushGrouts',
     value: function pushGrouts(tiles, tile) {
+      var mountedGrouts = [];
       var grout = new _Grout2.default(tile.width / tile.ratio, tile.height / tile.ratio, this.plan, tile.ratio, this.options.grout.size, this.options.grout.color);
       grout.position = Object.assign({}, tile.position);
-      tiles.push(grout.mount('top'));
+      var mount = null;
+
+      mount = grout.mount('top');
+      mount.renderOrder = tile.renderOrder;
+      tiles.push(mount);
+      mountedGrouts.push(mount);
       grout.clippingByWall(this);
-      tiles.push(grout.mount('bottom'));
+
+      mount = grout.mount('bottom');
+      mount.renderOrder = tile.renderOrder;
+      tiles.push(mount);
+      mountedGrouts.push(mount);
       grout.clippingByWall(this);
-      tiles.push(grout.mount('left'));
+
+      mount = grout.mount('left');
+      mount.renderOrder = tile.renderOrder;
+      tiles.push(mount);
+      mountedGrouts.push(mount);
       grout.clippingByWall(this);
-      tiles.push(grout.mount('right'));
+
+      mount = grout.mount('right');
+      mount.renderOrder = tile.renderOrder;
+      tiles.push(mount);
+      mountedGrouts.push(mount);
       grout.clippingByWall(this);
+
+      return mountedGrouts;
     }
   }, {
     key: 'pushTileHorizontal',
@@ -231,6 +356,18 @@ var Wall = function (_Object3D) {
     key: 'selectedTile',
     get: function get() {
       var tile = this.tiles[this.options.selectedTile];
+      tile.plan = this.plan;
+
+      return tile;
+    }
+  }, {
+    key: 'freeStyleTile',
+    get: function get() {
+      if (this.options.freeStyleTile === null) {
+        this.options.freeStyleTile = 0;
+      }
+
+      var tile = this.tiles[this.options.freeStyleTile];
       tile.plan = this.plan;
 
       return tile;

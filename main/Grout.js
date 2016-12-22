@@ -80,9 +80,12 @@ var Grout = function (_Object3D) {
         }
       }
 
-      this.material = new Three.MeshBasicMaterial({ color: this.texture, transparent: true, opacity: 0.4 });
+      this.material = new Three.MeshBasicMaterial({ color: this.texture, transparent: false, opacity: 0.4 });
       var grout = new Three.Mesh(boxGeometry, this.material);
       grout.position.set(this.position.x, this.position.y, this.position.z);
+      grout.objectType = 'Grout';
+      grout.renderOrder = 1;
+      this.material.depthTest = false;
 
       this.position = resetPosition;
 
