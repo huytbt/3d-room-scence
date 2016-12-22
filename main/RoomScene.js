@@ -352,6 +352,33 @@ var RoomScene = function (_Component) {
       callback && callback();
     }
   }, {
+    key: 'removeAllTiles',
+    value: function removeAllTiles(wallIndex) {
+      var _this10 = this;
+
+      var wall = this.walls[wallIndex];
+
+      if (wall === undefined) {
+        return;
+      }
+
+      wall.mountedTiles.map(function (tile) {
+        _this10.room.remove(tile);
+      });
+      wall.mountedTiles = [];
+      wall.mountedFreeTiles.map(function (tile) {
+        _this10.room.remove(tile);
+      });
+      wall.mountedFreeTiles = [];
+
+      wall.mount();
+      wall.mountedTiles.map(function (tile) {
+        _this10.room.add(tile);
+      });
+
+      this.refresh();
+    }
+  }, {
     key: 'changeFreeStyleTile',
     value: function changeFreeStyleTile(wallIndex, tileIndex, callback) {
       var wall = this.walls[wallIndex];
@@ -370,6 +397,14 @@ var RoomScene = function (_Component) {
         }
       });
 
+      wall.options.selectedTile = tileIndex;
+
+      if (tileIndex === null) {
+        callback && callback();
+        this.resetFreeRoom();
+        return;
+      }
+
       this.initFreeRoom(wall.options.type);
 
       callback && callback();
@@ -377,13 +412,9 @@ var RoomScene = function (_Component) {
   }, {
     key: 'initFreeRoom',
     value: function initFreeRoom(wallType) {
-      var _this10 = this;
+      var _this11 = this;
 
-      // remove old marks
-      this.maskTiles.map(function (tile) {
-        _this10.freeRoom.remove(tile);
-      });
-      this.maskTiles = [];
+      this.resetFreeRoom();
 
       // add mask tiles
       this.walls.map(function (wall, wallIndex) {
@@ -391,9 +422,9 @@ var RoomScene = function (_Component) {
           return;
         }
 
-        _this10.renderWallMask(wall, _this10.freeRoom, function (mountedTiles) {
+        _this11.renderWallMask(wall, _this11.freeRoom, function (mountedTiles) {
           mountedTiles.map(function (tile, index) {
-            _this10.maskTiles.push(tile);
+            _this11.maskTiles.push(tile);
             tile.material.transparent = false;
             tile.material.opacity = 1;
             tile.maskIndex = wall.freeTileLevel * 10000 + index;
@@ -402,6 +433,17 @@ var RoomScene = function (_Component) {
           });
         });
       });
+    }
+  }, {
+    key: 'resetFreeRoom',
+    value: function resetFreeRoom() {
+      var _this12 = this;
+
+      // remove old marks
+      this.maskTiles.map(function (tile) {
+        _this12.freeRoom.remove(tile);
+      });
+      this.maskTiles = [];
     }
   }, {
     key: 'onWindowMouseMove',
@@ -477,7 +519,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'addFreeTile',
     value: function addFreeTile() {
-      var _this11 = this;
+      var _this13 = this;
 
       if (!this.INTERSECTED) {
         return;
@@ -496,7 +538,7 @@ var RoomScene = function (_Component) {
       if (duplicates.length) {
         duplicates.map(function (tile) {
           wall.removeDuplicatedFreeTiles(tile);
-          _this11.room.remove(tile);
+          _this13.room.remove(tile);
         });
         return maskIndex;
       }
@@ -504,7 +546,7 @@ var RoomScene = function (_Component) {
       var mountedTiles = wall.mountFreeTile(this.INTERSECTED);
       mountedTiles.map(function (tile) {
         tile.maskIndex = maskIndex;
-        _this11.room.add(tile);
+        _this13.room.add(tile);
       });
 
       this.refresh();
@@ -514,7 +556,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'setWallGrout',
     value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
-      var _this12 = this;
+      var _this14 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -529,7 +571,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this12.room.remove(tile);
+        _this14.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -540,7 +582,7 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this12.room.add(tile);
+        _this14.room.add(tile);
       });
 
       this.refresh();

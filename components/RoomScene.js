@@ -302,6 +302,30 @@ class RoomScene extends Component {
     callback && callback();
   }
 
+  removeAllTiles(wallIndex) {
+    const wall = this.walls[wallIndex];
+
+    if (wall === undefined) {
+      return;
+    }
+
+    wall.mountedTiles.map((tile) => {
+      this.room.remove(tile);
+    });
+    wall.mountedTiles = [];
+    wall.mountedFreeTiles.map((tile) => {
+      this.room.remove(tile);
+    });
+    wall.mountedFreeTiles = [];
+
+    wall.mount();
+    wall.mountedTiles.map((tile) => {
+      this.room.add(tile);
+    });
+
+    this.refresh();
+  }
+
   changeFreeStyleTile(wallIndex, tileIndex, callback) {
     const wall = this.walls[wallIndex];
 
@@ -319,17 +343,21 @@ class RoomScene extends Component {
       }
     });
 
+    wall.options.selectedTile = tileIndex;
+
+    if (tileIndex === null) {
+      callback && callback();
+      this.resetFreeRoom();
+      return;
+    }
+
     this.initFreeRoom(wall.options.type);
 
     callback && callback();
   }
 
   initFreeRoom(wallType) {
-    // remove old marks
-    this.maskTiles.map((tile) => {
-      this.freeRoom.remove(tile);
-    });
-    this.maskTiles = [];
+    this.resetFreeRoom();
 
     // add mask tiles
     this.walls.map((wall, wallIndex) => {
@@ -348,6 +376,14 @@ class RoomScene extends Component {
         });
       });
     });
+  }
+
+  resetFreeRoom() {
+    // remove old marks
+    this.maskTiles.map((tile) => {
+      this.freeRoom.remove(tile);
+    });
+    this.maskTiles = [];
   }
 
   onWindowMouseMove(event) {
