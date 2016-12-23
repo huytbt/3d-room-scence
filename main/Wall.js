@@ -106,6 +106,14 @@ var Wall = function (_Object3D) {
 
       var mountedTiles = [];
 
+      // add background
+      var tileBackground = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor, {});
+      tileBackground.position = this.position;
+      var moutedTileBackground = tileBackground.mount();
+      mountedTiles.push(moutedTileBackground);
+      moutedTileBackground.objectType = 'Background';
+      tileBackground.clippingByWall(this);
+
       this.mountedFreeTiles.map(function (tile) {
         mountedTiles.push(tile);
         if (_this2.options.grout.size) {
@@ -116,30 +124,19 @@ var Wall = function (_Object3D) {
         }
       });
 
-      if (this.options.selectedTile === null) {
-        var _tile = new _Tile2.default(this.width / this.ratio, this.height / this.ratio, this.plan, this.ratio, this.options.defaultColor, {});
-        _tile.position = this.position;
-        mountedTiles.push(_tile.mount());
-        _tile.clippingByWall(this);
-
-        mountedTiles.map(function (tile) {
-          _this2.mountedTiles.push(tile);
-        });
-
-        return mountedTiles;
-      }
-
-      var tile = this.selectedTile;
-      switch (this.plan) {
-        case 'x':
-          this.pushTile(mountedTiles, tile, 'z', 'y');
-          break;
-        case 'y':
-          this.pushTile(mountedTiles, tile, 'x', 'z');
-          break;
-        case 'z':
-          this.pushTile(mountedTiles, tile, 'x', 'y');
-          break;
+      if (this.options.selectedTile !== null && this.options.layout !== Wall.LAYOUT_FREESTYLE) {
+        var tile = this.selectedTile;
+        switch (this.plan) {
+          case 'x':
+            this.pushTile(mountedTiles, tile, 'z', 'y');
+            break;
+          case 'y':
+            this.pushTile(mountedTiles, tile, 'x', 'z');
+            break;
+          case 'z':
+            this.pushTile(mountedTiles, tile, 'x', 'y');
+            break;
+        }
       }
 
       mountedTiles.map(function (tile) {
@@ -164,6 +161,7 @@ var Wall = function (_Object3D) {
       tile.originObject = Object.assign({}, fromTile.originObject);
       tile.originObject.position = tile.position;
       tile.renderOrder = this.freeTileLevel;
+      tile.objectType = 'Tile';
       mountedTiles.push(tile);
 
       this.mountedFreeTiles.push(tile);

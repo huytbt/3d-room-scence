@@ -220,6 +220,8 @@ class RoomScene extends Component {
       return this.changeFreeStyleTile(wallIndex, tileIndex, callback);
     }
 
+    this.resetFreeRoom();
+
     if (wall.options.layout === Wall.LAYOUT_CHECKERBOARD) {
       const isDifferenceTileSize = wall.options.selectedTile !== null && tileIndex !== null &&
         (wall.tiles[tileIndex].width !== wall.tiles[wall.options.selectedTile].width ||
@@ -479,6 +481,9 @@ class RoomScene extends Component {
         wall.removeDuplicatedFreeTiles(tile);
         this.room.remove(tile);
       });
+
+      this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+
       return maskIndex;
     }
 
@@ -489,6 +494,8 @@ class RoomScene extends Component {
     });
 
     this.refresh();
+
+    this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
 
     return maskIndex;
   }
@@ -556,6 +563,7 @@ RoomScene.propTypes = {
   camera: React.PropTypes.object.isRequired,
   debug: React.PropTypes.bool,
   onLoadingTextures: React.PropTypes.func,
+  onTileAdded: React.PropTypes.func,
   perspective: React.PropTypes.object.isRequired,
   walls: React.PropTypes.array.isRequired,
   layerImages: React.PropTypes.array.isRequired

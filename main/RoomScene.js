@@ -269,6 +269,8 @@ var RoomScene = function (_Component) {
         return this.changeFreeStyleTile(wallIndex, tileIndex, callback);
       }
 
+      this.resetFreeRoom();
+
       if (wall.options.layout === _Wall2.default.LAYOUT_CHECKERBOARD) {
         var isDifferenceTileSize = wall.options.selectedTile !== null && tileIndex !== null && (wall.tiles[tileIndex].width !== wall.tiles[wall.options.selectedTile].width || wall.tiles[tileIndex].height !== wall.tiles[wall.options.selectedTile].height);
         if (isDifferenceTileSize) {
@@ -540,6 +542,9 @@ var RoomScene = function (_Component) {
           wall.removeDuplicatedFreeTiles(tile);
           _this13.room.remove(tile);
         });
+
+        this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+
         return maskIndex;
       }
 
@@ -550,6 +555,8 @@ var RoomScene = function (_Component) {
       });
 
       this.refresh();
+
+      this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
 
       return maskIndex;
     }
@@ -626,6 +633,7 @@ RoomScene.propTypes = {
   camera: _react2.default.PropTypes.object.isRequired,
   debug: _react2.default.PropTypes.bool,
   onLoadingTextures: _react2.default.PropTypes.func,
+  onTileAdded: _react2.default.PropTypes.func,
   perspective: _react2.default.PropTypes.object.isRequired,
   walls: _react2.default.PropTypes.array.isRequired,
   layerImages: _react2.default.PropTypes.array.isRequired

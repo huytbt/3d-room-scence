@@ -76,6 +76,15 @@ class Wall extends Object3D {
   mount() {
     const mountedTiles = [];
 
+    // add background
+    const tileBackground = new Tile(this.width / this.ratio, this.height / this.ratio,
+      this.plan, this.ratio, this.options.defaultColor, {});
+    tileBackground.position = this.position;
+    const moutedTileBackground = tileBackground.mount();
+    mountedTiles.push(moutedTileBackground);
+    moutedTileBackground.objectType = 'Background';
+    tileBackground.clippingByWall(this);
+
     this.mountedFreeTiles.map((tile) => {
       mountedTiles.push(tile);
       if (this.options.grout.size) {
@@ -86,31 +95,19 @@ class Wall extends Object3D {
       }
     });
 
-    if (this.options.selectedTile === null) {
-      const tile = new Tile(this.width / this.ratio, this.height / this.ratio,
-        this.plan, this.ratio, this.options.defaultColor, {});
-      tile.position = this.position;
-      mountedTiles.push(tile.mount());
-      tile.clippingByWall(this);
-
-      mountedTiles.map((tile) => {
-        this.mountedTiles.push(tile);
-      });
-
-      return mountedTiles;
-    }
-
-    const tile = this.selectedTile;
-    switch (this.plan) {
-      case 'x':
-        this.pushTile(mountedTiles, tile, 'z', 'y');
-        break;
-      case 'y':
-        this.pushTile(mountedTiles, tile, 'x', 'z');
-        break;
-      case 'z':
-        this.pushTile(mountedTiles, tile, 'x', 'y');
-        break;
+    if (this.options.selectedTile !== null && this.options.layout !== Wall.LAYOUT_FREESTYLE) {
+      const tile = this.selectedTile;
+      switch (this.plan) {
+        case 'x':
+          this.pushTile(mountedTiles, tile, 'z', 'y');
+          break;
+        case 'y':
+          this.pushTile(mountedTiles, tile, 'x', 'z');
+          break;
+        case 'z':
+          this.pushTile(mountedTiles, tile, 'x', 'y');
+          break;
+      }
     }
 
     mountedTiles.map((tile) => {
@@ -132,6 +129,7 @@ class Wall extends Object3D {
     tile.originObject = Object.assign({}, fromTile.originObject);
     tile.originObject.position = tile.position;
     tile.renderOrder = this.freeTileLevel;
+    tile.objectType = 'Tile';
     mountedTiles.push(tile);
 
     this.mountedFreeTiles.push(tile);
