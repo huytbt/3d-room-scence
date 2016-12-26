@@ -8,11 +8,18 @@ class RoomScene extends Component {
   constructor(props) {
     super(props);
 
+    this._size = props.size;
     this.renderer = null;
     this.scene = null;
     this.room = null;
+    this.freeRoom = null;
+    this.maskTiles = [];
     this.walls = [];
     this.layerImages = [];
+    this.mouseState = null;
+    this.handlerMouseMove = this.onWindowMouseMove.bind(this);
+    this.handlerMouseUp = this.onWindowMouseUp.bind(this);
+    this.handlerMouseDown = this.onWindowMouseDown.bind(this);
   }
 
   componentDidMount () {
@@ -38,12 +45,14 @@ class RoomScene extends Component {
 
   initScene() {
     this.room = new Three.Object3D();
+    this.freeRoom = new Three.Object3D();
     if (this.props.debug) {
       this.room.add(new Three.GridHelper( 100, 50 ));
     }
 
     this.scene = new Three.Scene();
     this.scene.add(this.room);
+    this.scene.add(this.freeRoom);
 
     this.camera = new Three.PerspectiveCamera(this.props.perspective.fov, this.width / this.height, 1, 100000);
     this.camera.position.set(
@@ -149,13 +158,26 @@ class RoomScene extends Component {
 
   renderScene() {
     this.walls.map((wall) => {
-      wall.mount();
-      wall.mountedTiles.map((tile) => {
-        this.room.add(tile);
-      });
+      this.renderWall(wall, this.room);
     });
 
     this.renderer.render(this.scene, this.camera);
+  }
+
+  renderWall(wall, toContainer, callback) {
+    const mountedTiles = wall.mount();
+    mountedTiles.map((tile) => {
+      toContainer.add(tile);
+    });
+    callback && callback(mountedTiles);
+  }
+
+  renderWallMask(wall, toContainer, callback) {
+    const mountedTiles = wall.mountMask();
+    mountedTiles.map((tile) => {
+      toContainer.add(tile);
+    });
+    callback && callback(mountedTiles);
   }
 
   renderImage(layer) {
@@ -193,6 +215,12 @@ class RoomScene extends Component {
     if (tileIndex !== null && wall.tiles[tileIndex] === undefined) {
       return callback(new Error('Invalid tile index.'));
     }
+
+    if (wall.options.layout === Wall.LAYOUT_FREESTYLE) {
+      return this.changeFreeStyleTile(wallIndex, tileIndex, callback);
+    }
+
+    this.resetFreeRoom();
 
     if (wall.options.layout === Wall.LAYOUT_CHECKERBOARD) {
       const isDifferenceTileSize = wall.options.selectedTile !== null && tileIndex !== null &&
@@ -245,14 +273,231 @@ class RoomScene extends Component {
       wall.options.checkerboardSelectedTile = null;
     }
 
+    if (wall.options.layout === Wall.LAYOUT_FREESTYLE) {
+      this.changeFreeStyleTile(wallIndex, wall.options.selectedTile);
+      this.initFreeRoom();
+
+      this.renderer.domElement.addEventListener("mousemove", this.handlerMouseMove, true);
+      this.renderer.domElement.addEventListener("mouseup", this.handlerMouseUp, true);
+      this.renderer.domElement.addEventListener("mousedown", this.handlerMouseDown, true);
+    } else {
+      this.mouseState = null;
+      wall.mountedFreeTiles.map((tile) => {
+        this.room.remove(tile);
+      });
+      wall.mountedFreeTiles = [];
+      if ( this.INTERSECTED ) {
+        this.INTERSECTED.material.color.setHex( this.INTERSECTED.currentHex );
+        this.INTERSECTED.renderOrder = -1;
+        this.INTERSECTED.material.transparent = false;
+      }
+
+      this.renderer.domElement.removeEventListener("mousemove", this.handlerMouseMove, true);
+      this.renderer.domElement.removeEventListener("mouseup", this.handlerMouseUp, true);
+      this.renderer.domElement.removeEventListener("mousedown", this.handlerMouseDown, true);
+    }
+
+    this.renderWall(wall, this.room);
+
+    this.refresh();
+
+    callback && callback();
+  }
+
+  removeAllTiles(wallIndex) {
+    const wall = this.walls[wallIndex];
+
+    if (wall === undefined) {
+      return;
+    }
+
+    wall.mountedTiles.map((tile) => {
+      this.room.remove(tile);
+    });
+    wall.mountedTiles = [];
+    wall.mountedFreeTiles.map((tile) => {
+      this.room.remove(tile);
+    });
+    wall.mountedFreeTiles = [];
+
     wall.mount();
     wall.mountedTiles.map((tile) => {
       this.room.add(tile);
     });
 
     this.refresh();
+  }
+
+  changeFreeStyleTile(wallIndex, tileIndex, callback) {
+    const wall = this.walls[wallIndex];
+
+    if (wall === undefined) {
+      return callback(new Error('Invalid wall index.'));
+    }
+    if (tileIndex !== null && wall.tiles[tileIndex] === undefined) {
+      return callback(new Error('Invalid tile index.'));
+    }
+
+    this.walls.map((w) => {
+      if (wall.options.type === w.options.type) {
+        w.options.freeStyleTile = tileIndex;
+        w.freeTileLevel++;
+      }
+    });
+
+    wall.options.selectedTile = tileIndex;
+
+    if (tileIndex === null) {
+      callback && callback();
+      this.resetFreeRoom();
+      return;
+    }
+
+    this.initFreeRoom(wall.options.type);
 
     callback && callback();
+  }
+
+  initFreeRoom(wallType) {
+    this.resetFreeRoom();
+
+    // add mask tiles
+    this.walls.map((wall, wallIndex) => {
+      if (wall.options.type !== wallType) {
+        return;
+      }
+
+      this.renderWallMask(wall, this.freeRoom, (mountedTiles) => {
+        mountedTiles.map((tile, index) => {
+          this.maskTiles.push(tile);
+          tile.material.transparent = false;
+          tile.material.opacity = 1;
+          tile.maskIndex = wall.freeTileLevel * 10000 + index;
+          tile.wallIndex = wallIndex;
+          tile.renderOrder = 0;
+        });
+      });
+    });
+  }
+
+  resetFreeRoom() {
+    // remove old marks
+    this.maskTiles.map((tile) => {
+      this.freeRoom.remove(tile);
+    });
+    this.maskTiles = [];
+  }
+
+  onWindowMouseMove(event) {
+    const mouse = {
+      x: event.layerX / this.width * 2 - 1,
+      y: -(event.layerY / this.height) * 2 + 1
+    };
+
+    const ray = new Three.Raycaster();
+    ray.setFromCamera( mouse, this.camera );
+
+    const intersects = ray.intersectObjects(this.freeRoom.children);
+
+    if ( intersects.length > 0 )
+    {
+      // if the closest object intersected is not the currently stored intersection object
+      if ( intersects[ 0 ].object !== this.INTERSECTED && intersects[ 0 ].object.objectType === 'Tile')
+      {
+        // restore previous intersection object (if it exists) to its original color
+        if ( this.INTERSECTED ) {
+          this.INTERSECTED.material.color.setHex( this.INTERSECTED.currentHex );
+          this.INTERSECTED.renderOrder = -1;
+          this.INTERSECTED.material.transparent = false;
+        }
+
+        // store reference to closest object as current intersection object
+        this.INTERSECTED = intersects[ 0 ].object;
+
+        // store color of closest object (for later restoration)
+        this.INTERSECTED.currentHex = this.INTERSECTED.material.color.getHex();
+        // set a new color for closest object
+        this.INTERSECTED.material.color.setHex( 0x00BCD4 );
+        this.INTERSECTED.material.opacity = 0.25;
+        this.INTERSECTED.material.transparent = true;
+        this.INTERSECTED.renderOrder = 999999;
+      }
+    }
+    else // there are no intersections
+    {
+      // restore previous intersection object (if it exists) to its original color
+      if ( this.INTERSECTED ) {
+        this.INTERSECTED.material.color.setHex( this.INTERSECTED.currentHex );
+        this.INTERSECTED.renderOrder = 0;
+        this.INTERSECTED.material.transparent = false;
+      }
+      // remove previous intersection object reference
+      //     by setting current intersection object to "nothing"
+      this.INTERSECTED = null;
+    }
+
+    if (this.INTERSECTED && this.mouseState && this.mouseState.state === 'down' &&
+      this.mouseState.index !== this.INTERSECTED.maskIndex) {
+      this.mouseState.index = this.addFreeTile();
+    }
+
+    this.refresh();
+  }
+
+  onWindowMouseUp(event) {
+    this.mouseState = {
+      state: 'up',
+      index: -1
+    };
+  }
+
+  onWindowMouseDown(event) {
+    const maskIndex = this.addFreeTile();
+    this.mouseState = {
+      state: 'down',
+      index: maskIndex
+    };
+    this.refresh();
+  }
+
+  addFreeTile()
+  {
+    if (!this.INTERSECTED) {
+      return;
+    }
+
+    const maskIndex = this.INTERSECTED.maskIndex;
+    const wall = this.walls[this.INTERSECTED.wallIndex];
+
+    if (wall === undefined) {
+      return maskIndex;
+    }
+
+    const duplicates = wall.mountedTiles.filter((tile) => {
+      return tile.maskIndex === maskIndex;
+    });
+    if (duplicates.length) {
+      duplicates.map((tile) => {
+        wall.removeDuplicatedFreeTiles(tile);
+        this.room.remove(tile);
+      });
+
+      this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+
+      return maskIndex;
+    }
+
+    const mountedTiles = wall.mountFreeTile(this.INTERSECTED);
+    mountedTiles.map((tile) => {
+      tile.maskIndex = maskIndex;
+      this.room.add(tile);
+    });
+
+    this.refresh();
+
+    this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
+
+    return maskIndex;
   }
 
   setWallGrout(wallIndex, groutSize, groutColor, callback) {
@@ -293,12 +538,13 @@ class RoomScene extends Component {
   }
 
   set size(size) {
+    this._size = size;
     this.renderer.setSize(size, size / (16/9));
     this.refresh();
   }
 
   get width() {
-    return this.props.size;
+    return this._size;
   }
 
   get height() {
@@ -317,6 +563,7 @@ RoomScene.propTypes = {
   camera: React.PropTypes.object.isRequired,
   debug: React.PropTypes.bool,
   onLoadingTextures: React.PropTypes.func,
+  onTileAdded: React.PropTypes.func,
   perspective: React.PropTypes.object.isRequired,
   walls: React.PropTypes.array.isRequired,
   layerImages: React.PropTypes.array.isRequired

@@ -110,6 +110,7 @@ const roomScene = {
       options: {
         selectedTile: null,
         layout: 0,
+        type: 'flooring',
         grout: {
           size: 0,
           color: 0xffffd2

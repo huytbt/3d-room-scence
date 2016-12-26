@@ -39,8 +39,8 @@ var Tile = function (_Object3D) {
 
   _createClass(Tile, [{
     key: 'mount',
-    value: function mount(groutSize) {
-      var thick = 0;
+    value: function mount(thick) {
+      thick = thick || 0;
       var boxGeometry = null;
       switch (this.plan) {
         case 'x':
@@ -62,6 +62,10 @@ var Tile = function (_Object3D) {
 
       var tile = new Three.Mesh(boxGeometry, this.material);
       tile.position.set(this.position.x, this.position.y, this.position.z);
+      tile.objectType = 'Tile';
+      tile.originObject = this;
+      tile.renderOrder = 1;
+      this.material.depthTest = false;
 
       return tile;
     }

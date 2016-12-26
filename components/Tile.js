@@ -8,8 +8,8 @@ class Tile extends Object3D {
     this.meta = meta;
   }
 
-  mount(groutSize) {
-    const thick = 0;
+  mount(thick) {
+    thick = thick || 0;
     let boxGeometry = null;
     switch (this.plan) {
       case 'x':
@@ -31,6 +31,10 @@ class Tile extends Object3D {
 
     const tile = new Three.Mesh(boxGeometry, this.material);
     tile.position.set(this.position.x, this.position.y, this.position.z);
+    tile.objectType = 'Tile';
+    tile.originObject = this;
+    tile.renderOrder = 1;
+    this.material.depthTest = false;
 
     return tile;
   }
