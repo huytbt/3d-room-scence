@@ -95,7 +95,7 @@ class Wall extends Object3D {
       }
     });
 
-    if (this.options.selectedTile !== null && this.options.layout !== Wall.LAYOUT_FREESTYLE) {
+    if (this.options.selectedTile !== null) {
       const tile = this.selectedTile;
       switch (this.plan) {
         case 'x':

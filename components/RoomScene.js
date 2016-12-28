@@ -340,8 +340,18 @@ class RoomScene extends Component {
 
     this.walls.map((w) => {
       if (wall.options.type === w.options.type) {
+        const oldLayout = w.options.layout;
         w.options.freeStyleTile = tileIndex;
+        w.options.layout = wall.options.layout;
         w.freeTileLevel++;
+
+        if (w !== wall && oldLayout !== wall.options.layout) {
+          w.mountedTiles.map((tile) => {
+            this.room.remove(tile);
+          });
+          w.mountedTiles = [];
+          this.renderWall(w, this.room);
+        }
       }
     });
 
