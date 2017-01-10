@@ -300,7 +300,7 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'changeWallLayout',
-    value: function changeWallLayout(wallIndex, layout, callback) {
+    value: function changeWallLayout(wallIndex, layout, callback, startKeepTiles, doneKeepTiles) {
       var _this9 = this;
 
       var wall = this.walls[wallIndex];
@@ -312,7 +312,12 @@ var RoomScene = function (_Component) {
         return callback(new Error('Invalid layout.'));
       }
 
+      var currentTiles = [];
+
       wall.mountedTiles.map(function (tile) {
+        if (tile.objectType === 'Tile') {
+          currentTiles.push(tile);
+        }
         _this9.room.remove(tile);
       });
       wall.mountedTiles = [];
@@ -325,7 +330,7 @@ var RoomScene = function (_Component) {
 
       if (wall.options.layout === _Wall2.default.LAYOUT_FREESTYLE) {
         this.changeFreeStyleTile(wallIndex, wall.options.selectedTile);
-        this.initFreeRoom();
+        this.initFreeRoom(wall, wallIndex);
 
         this.renderer.domElement.addEventListener("mousemove", this.handlerMouseMove, true);
         this.renderer.domElement.addEventListener("mouseup", this.handlerMouseUp, true);
@@ -348,6 +353,8 @@ var RoomScene = function (_Component) {
       }
 
       this.renderWall(wall, this.room);
+
+      layout === _Wall2.default.LAYOUT_FREESTYLE && this.keepCurrentTilesWhenFreeRoom(wall, wallIndex, currentTiles, startKeepTiles, doneKeepTiles);
 
       this.refresh();
 
@@ -392,12 +399,9 @@ var RoomScene = function (_Component) {
         return callback(new Error('Invalid tile index.'));
       }
 
-      this.walls.map(function (w) {
-        if (wall.options.type === w.options.type) {
-          w.options.freeStyleTile = tileIndex;
-          w.freeTileLevel++;
-        }
-      });
+      wall.options.freeStyleTile = tileIndex;
+      wall.options.layout = wall.options.layout;
+      wall.freeTileLevel++;
 
       wall.options.selectedTile = tileIndex;
 
@@ -407,43 +411,56 @@ var RoomScene = function (_Component) {
         return;
       }
 
-      this.initFreeRoom(wall.options.type);
+      this.initFreeRoom(wall, wallIndex);
 
       callback && callback();
     }
   }, {
     key: 'initFreeRoom',
-    value: function initFreeRoom(wallType) {
+    value: function initFreeRoom(wall, wallIndex) {
       var _this11 = this;
 
       this.resetFreeRoom();
 
       // add mask tiles
-      this.walls.map(function (wall, wallIndex) {
-        if (wall.options.type !== wallType) {
-          return;
-        }
-
-        _this11.renderWallMask(wall, _this11.freeRoom, function (mountedTiles) {
-          mountedTiles.map(function (tile, index) {
-            _this11.maskTiles.push(tile);
-            tile.material.transparent = false;
-            tile.material.opacity = 1;
-            tile.maskIndex = wall.freeTileLevel * 10000 + index;
-            tile.wallIndex = wallIndex;
-            tile.renderOrder = 0;
-          });
+      this.renderWallMask(wall, this.freeRoom, function (mountedTiles) {
+        mountedTiles.map(function (tile, index) {
+          _this11.maskTiles.push(tile);
+          tile.material.transparent = false;
+          tile.material.opacity = 1;
+          tile.maskIndex = wall.freeTileLevel * 1000 + index;
+          tile.wallIndex = wallIndex;
+          tile.renderOrder = 0;
         });
       });
     }
   }, {
+    key: 'keepCurrentTilesWhenFreeRoom',
+    value: function keepCurrentTilesWhenFreeRoom(wall, wallIndex, currentTiles, start, done) {
+      var _this12 = this;
+
+      start && start();
+      currentTiles.map(function (tile, index) {
+        if (!tile.objectType || tile.objectType !== 'Tile') {
+          return;
+        }
+        tile.currentHex = tile.material.color.getHex();
+        tile.maskIndex = -1 * index;
+        tile.wallIndex = wallIndex;
+        _this12.addFreeTile(tile);
+      });
+
+      wall.freeTileLevel++;
+      done && done();
+    }
+  }, {
     key: 'resetFreeRoom',
     value: function resetFreeRoom() {
-      var _this12 = this;
+      var _this13 = this;
 
       // remove old marks
       this.maskTiles.map(function (tile) {
-        _this12.freeRoom.remove(tile);
+        _this13.freeRoom.remove(tile);
       });
       this.maskTiles = [];
     }
@@ -495,7 +512,7 @@ var RoomScene = function (_Component) {
         }
 
       if (this.INTERSECTED && this.mouseState && this.mouseState.state === 'down' && this.mouseState.index !== this.INTERSECTED.maskIndex) {
-        this.mouseState.index = this.addFreeTile();
+        this.mouseState.index = this.addFreeTile(this.INTERSECTED);
       }
 
       this.refresh();
@@ -511,7 +528,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'onWindowMouseDown',
     value: function onWindowMouseDown(event) {
-      var maskIndex = this.addFreeTile();
+      var maskIndex = this.addFreeTile(this.INTERSECTED);
       this.mouseState = {
         state: 'down',
         index: maskIndex
@@ -520,15 +537,15 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'addFreeTile',
-    value: function addFreeTile() {
-      var _this13 = this;
+    value: function addFreeTile(INTERSECTED) {
+      var _this14 = this;
 
-      if (!this.INTERSECTED) {
+      if (!INTERSECTED) {
         return;
       }
 
-      var maskIndex = this.INTERSECTED.maskIndex;
-      var wall = this.walls[this.INTERSECTED.wallIndex];
+      var maskIndex = INTERSECTED.maskIndex;
+      var wall = this.walls[INTERSECTED.wallIndex];
 
       if (wall === undefined) {
         return maskIndex;
@@ -537,10 +554,11 @@ var RoomScene = function (_Component) {
       var duplicates = wall.mountedTiles.filter(function (tile) {
         return tile.maskIndex === maskIndex;
       });
+
       if (duplicates.length) {
         duplicates.map(function (tile) {
           wall.removeDuplicatedFreeTiles(tile);
-          _this13.room.remove(tile);
+          _this14.room.remove(tile);
         });
 
         this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
@@ -548,10 +566,10 @@ var RoomScene = function (_Component) {
         return maskIndex;
       }
 
-      var mountedTiles = wall.mountFreeTile(this.INTERSECTED);
+      var mountedTiles = wall.mountFreeTile(INTERSECTED);
       mountedTiles.map(function (tile) {
         tile.maskIndex = maskIndex;
-        _this13.room.add(tile);
+        _this14.room.add(tile);
       });
 
       this.refresh();
@@ -563,7 +581,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'setWallGrout',
     value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
-      var _this14 = this;
+      var _this15 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -578,7 +596,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this14.room.remove(tile);
+        _this15.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -589,7 +607,7 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this14.room.add(tile);
+        _this15.room.add(tile);
       });
 
       this.refresh();

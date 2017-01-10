@@ -252,7 +252,7 @@ class RoomScene extends Component {
     callback && callback();
   }
 
-  changeWallLayout(wallIndex, layout, callback) {
+  changeWallLayout(wallIndex, layout, callback, startKeepTiles, doneKeepTiles) {
     const wall = this.walls[wallIndex];
 
     if (wall === undefined) {
@@ -262,7 +262,12 @@ class RoomScene extends Component {
       return callback(new Error('Invalid layout.'));
     }
 
+    const currentTiles = [];
+
     wall.mountedTiles.map((tile) => {
+      if (tile.objectType === 'Tile') {
+        currentTiles.push(tile);
+      }
       this.room.remove(tile);
     });
     wall.mountedTiles = [];
@@ -275,7 +280,7 @@ class RoomScene extends Component {
 
     if (wall.options.layout === Wall.LAYOUT_FREESTYLE) {
       this.changeFreeStyleTile(wallIndex, wall.options.selectedTile);
-      this.initFreeRoom();
+      this.initFreeRoom(wall, wallIndex);
 
       this.renderer.domElement.addEventListener("mousemove", this.handlerMouseMove, true);
       this.renderer.domElement.addEventListener("mouseup", this.handlerMouseUp, true);
@@ -298,6 +303,9 @@ class RoomScene extends Component {
     }
 
     this.renderWall(wall, this.room);
+
+    layout === Wall.LAYOUT_FREESTYLE &&
+      this.keepCurrentTilesWhenFreeRoom(wall, wallIndex, currentTiles, startKeepTiles, doneKeepTiles);
 
     this.refresh();
 
@@ -338,12 +346,9 @@ class RoomScene extends Component {
       return callback(new Error('Invalid tile index.'));
     }
 
-    this.walls.map((w) => {
-      if (wall.options.type === w.options.type) {
-        w.options.freeStyleTile = tileIndex;
-        w.freeTileLevel++;
-      }
-    });
+    wall.options.freeStyleTile = tileIndex;
+    wall.options.layout = wall.options.layout;
+    wall.freeTileLevel++;
 
     wall.options.selectedTile = tileIndex;
 
@@ -353,31 +358,41 @@ class RoomScene extends Component {
       return;
     }
 
-    this.initFreeRoom(wall.options.type);
+    this.initFreeRoom(wall, wallIndex);
 
     callback && callback();
   }
 
-  initFreeRoom(wallType) {
+  initFreeRoom(wall, wallIndex) {
     this.resetFreeRoom();
 
     // add mask tiles
-    this.walls.map((wall, wallIndex) => {
-      if (wall.options.type !== wallType) {
-        return;
-      }
-
-      this.renderWallMask(wall, this.freeRoom, (mountedTiles) => {
-        mountedTiles.map((tile, index) => {
-          this.maskTiles.push(tile);
-          tile.material.transparent = false;
-          tile.material.opacity = 1;
-          tile.maskIndex = wall.freeTileLevel * 10000 + index;
-          tile.wallIndex = wallIndex;
-          tile.renderOrder = 0;
-        });
+    this.renderWallMask(wall, this.freeRoom, (mountedTiles) => {
+      mountedTiles.map((tile, index) => {
+        this.maskTiles.push(tile);
+        tile.material.transparent = false;
+        tile.material.opacity = 1;
+        tile.maskIndex = wall.freeTileLevel * 1000 + index;
+        tile.wallIndex = wallIndex;
+        tile.renderOrder = 0;
       });
     });
+  }
+
+  keepCurrentTilesWhenFreeRoom(wall, wallIndex, currentTiles, start, done) {
+    start && start();
+    currentTiles.map((tile, index) => {
+      if (!tile.objectType || tile.objectType !== 'Tile') {
+        return;
+      }
+      tile.currentHex = tile.material.color.getHex();
+      tile.maskIndex = -1 * index;
+      tile.wallIndex = wallIndex;
+      this.addFreeTile(tile);
+    });
+
+    wall.freeTileLevel++;
+    done && done();
   }
 
   resetFreeRoom() {
@@ -438,7 +453,7 @@ class RoomScene extends Component {
 
     if (this.INTERSECTED && this.mouseState && this.mouseState.state === 'down' &&
       this.mouseState.index !== this.INTERSECTED.maskIndex) {
-      this.mouseState.index = this.addFreeTile();
+      this.mouseState.index = this.addFreeTile(this.INTERSECTED);
     }
 
     this.refresh();
@@ -452,7 +467,7 @@ class RoomScene extends Component {
   }
 
   onWindowMouseDown(event) {
-    const maskIndex = this.addFreeTile();
+    const maskIndex = this.addFreeTile(this.INTERSECTED);
     this.mouseState = {
       state: 'down',
       index: maskIndex
@@ -460,14 +475,14 @@ class RoomScene extends Component {
     this.refresh();
   }
 
-  addFreeTile()
+  addFreeTile(INTERSECTED)
   {
-    if (!this.INTERSECTED) {
+    if (!INTERSECTED) {
       return;
     }
 
-    const maskIndex = this.INTERSECTED.maskIndex;
-    const wall = this.walls[this.INTERSECTED.wallIndex];
+    const maskIndex = INTERSECTED.maskIndex;
+    const wall = this.walls[INTERSECTED.wallIndex];
 
     if (wall === undefined) {
       return maskIndex;
@@ -476,6 +491,7 @@ class RoomScene extends Component {
     const duplicates = wall.mountedTiles.filter((tile) => {
       return tile.maskIndex === maskIndex;
     });
+
     if (duplicates.length) {
       duplicates.map((tile) => {
         wall.removeDuplicatedFreeTiles(tile);
@@ -487,7 +503,7 @@ class RoomScene extends Component {
       return maskIndex;
     }
 
-    const mountedTiles = wall.mountFreeTile(this.INTERSECTED);
+    const mountedTiles = wall.mountFreeTile(INTERSECTED);
     mountedTiles.map((tile) => {
       tile.maskIndex = maskIndex;
       this.room.add(tile);
