@@ -124,7 +124,7 @@ var Wall = function (_Object3D) {
         }
       });
 
-      if (this.options.selectedTile !== null) {
+      if (this.options.selectedTile !== null && this.options.layout !== Wall.LAYOUT_FREESTYLE) {
         var tile = this.selectedTile;
         switch (this.plan) {
           case 'x':
