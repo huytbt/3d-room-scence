@@ -312,6 +312,12 @@ var RoomScene = function (_Component) {
         return callback(new Error('Invalid layout.'));
       }
 
+      // no change
+      if (layout === wall.options.layout) {
+        callback && callback();
+        return;
+      }
+
       var currentTiles = [];
 
       wall.mountedTiles.map(function (tile) {
@@ -447,7 +453,7 @@ var RoomScene = function (_Component) {
         tile.currentHex = tile.material.color.getHex();
         tile.maskIndex = -1 * index;
         tile.wallIndex = wallIndex;
-        _this12.addFreeTile(tile);
+        _this12.addFreeTile(tile, true, true);
       });
 
       wall.freeTileLevel++;
@@ -537,7 +543,7 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'addFreeTile',
-    value: function addFreeTile(INTERSECTED) {
+    value: function addFreeTile(INTERSECTED, justAdd, notRefresh) {
       var _this14 = this;
 
       if (!INTERSECTED) {
@@ -551,19 +557,22 @@ var RoomScene = function (_Component) {
         return maskIndex;
       }
 
-      var duplicates = wall.mountedTiles.filter(function (tile) {
-        return tile.maskIndex === maskIndex;
-      });
-
-      if (duplicates.length) {
-        duplicates.map(function (tile) {
-          wall.removeDuplicatedFreeTiles(tile);
-          _this14.room.remove(tile);
+      // not remove duplicated if justAdd
+      if (!justAdd) {
+        var duplicates = wall.mountedTiles.filter(function (tile) {
+          return tile.maskIndex === maskIndex;
         });
 
-        this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+        if (duplicates.length) {
+          duplicates.map(function (tile) {
+            wall.removeDuplicatedFreeTiles(tile);
+            _this14.room.remove(tile);
+          });
 
-        return maskIndex;
+          this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+
+          return maskIndex;
+        }
       }
 
       var mountedTiles = wall.mountFreeTile(INTERSECTED);
@@ -572,7 +581,7 @@ var RoomScene = function (_Component) {
         _this14.room.add(tile);
       });
 
-      this.refresh();
+      !notRefresh && this.refresh();
 
       this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
 
