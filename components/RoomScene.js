@@ -394,7 +394,7 @@ class RoomScene extends Component {
       tile.currentHex = tile.material.color.getHex();
       tile.maskIndex = -1 * index;
       tile.wallIndex = wallIndex;
-      this.addFreeTile(tile, true, true);
+      this.addFreeTile(tile, true);
     });
 
     wall.freeTileLevel++;
@@ -481,7 +481,7 @@ class RoomScene extends Component {
     this.refresh();
   }
 
-  addFreeTile(INTERSECTED, justAdd, notRefresh)
+  addFreeTile(INTERSECTED, justAdd)
   {
     if (!INTERSECTED) {
       return;
@@ -517,8 +517,6 @@ class RoomScene extends Component {
       tile.maskIndex = maskIndex;
       this.room.add(tile);
     });
-
-    !notRefresh && this.refresh();
 
     this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
 
