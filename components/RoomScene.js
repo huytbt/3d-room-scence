@@ -262,6 +262,12 @@ class RoomScene extends Component {
       return callback(new Error('Invalid layout.'));
     }
 
+    // no change
+    if (layout === wall.options.layout) {
+      callback && callback();
+      return;
+    }
+
     const currentTiles = [];
 
     wall.mountedTiles.map((tile) => {
@@ -388,7 +394,7 @@ class RoomScene extends Component {
       tile.currentHex = tile.material.color.getHex();
       tile.maskIndex = -1 * index;
       tile.wallIndex = wallIndex;
-      this.addFreeTile(tile);
+      this.addFreeTile(tile, true, true);
     });
 
     wall.freeTileLevel++;
@@ -475,7 +481,7 @@ class RoomScene extends Component {
     this.refresh();
   }
 
-  addFreeTile(INTERSECTED)
+  addFreeTile(INTERSECTED, justAdd, notRefresh)
   {
     if (!INTERSECTED) {
       return;
@@ -488,19 +494,22 @@ class RoomScene extends Component {
       return maskIndex;
     }
 
-    const duplicates = wall.mountedTiles.filter((tile) => {
-      return tile.maskIndex === maskIndex;
-    });
-
-    if (duplicates.length) {
-      duplicates.map((tile) => {
-        wall.removeDuplicatedFreeTiles(tile);
-        this.room.remove(tile);
+    // not remove duplicated if justAdd
+    if (!justAdd) {
+      const duplicates = wall.mountedTiles.filter((tile) => {
+        return tile.maskIndex === maskIndex;
       });
 
-      this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+      if (duplicates.length) {
+        duplicates.map((tile) => {
+          wall.removeDuplicatedFreeTiles(tile);
+          this.room.remove(tile);
+        });
 
-      return maskIndex;
+        this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
+
+        return maskIndex;
+      }
     }
 
     const mountedTiles = wall.mountFreeTile(INTERSECTED);
@@ -509,7 +518,7 @@ class RoomScene extends Component {
       this.room.add(tile);
     });
 
-    this.refresh();
+    !notRefresh && this.refresh();
 
     this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
 
