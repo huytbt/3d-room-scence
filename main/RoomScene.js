@@ -461,7 +461,7 @@ var RoomScene = function (_Component) {
         tile.currentHex = tile.material.color.getHex();
         tile.maskIndex = -1 * index;
         tile.wallIndex = wallIndex;
-        _this13.addFreeTile(tile, true, true);
+        _this13.addFreeTile(tile, true);
       });
 
       wall.freeTileLevel++;
@@ -551,7 +551,7 @@ var RoomScene = function (_Component) {
     }
   }, {
     key: 'addFreeTile',
-    value: function addFreeTile(INTERSECTED, justAdd, notRefresh) {
+    value: function addFreeTile(INTERSECTED, justAdd) {
       var _this15 = this;
 
       if (!INTERSECTED) {
@@ -588,8 +588,6 @@ var RoomScene = function (_Component) {
         tile.maskIndex = maskIndex;
         _this15.room.add(tile);
       });
-
-      !notRefresh && this.refresh();
 
       this.props.onTileAdded && this.props.onTileAdded(wall, true, mountedTiles); // wall, add, mountedTiles
 
