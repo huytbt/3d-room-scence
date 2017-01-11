@@ -396,6 +396,8 @@ var RoomScene = function (_Component) {
   }, {
     key: 'changeFreeStyleTile',
     value: function changeFreeStyleTile(wallIndex, tileIndex, callback) {
+      var _this11 = this;
+
       var wall = this.walls[wallIndex];
 
       if (wall === undefined) {
@@ -412,6 +414,12 @@ var RoomScene = function (_Component) {
       wall.options.selectedTile = tileIndex;
 
       if (tileIndex === null) {
+        // remove all tiles
+        wall.mountedTiles.map(function (tile) {
+          _this11.room.remove(tile);
+        });
+        wall.mountedTiles = [];
+
         callback && callback();
         this.resetFreeRoom();
         return;
@@ -424,14 +432,14 @@ var RoomScene = function (_Component) {
   }, {
     key: 'initFreeRoom',
     value: function initFreeRoom(wall, wallIndex) {
-      var _this11 = this;
+      var _this12 = this;
 
       this.resetFreeRoom();
 
       // add mask tiles
       this.renderWallMask(wall, this.freeRoom, function (mountedTiles) {
         mountedTiles.map(function (tile, index) {
-          _this11.maskTiles.push(tile);
+          _this12.maskTiles.push(tile);
           tile.material.transparent = false;
           tile.material.opacity = 1;
           tile.maskIndex = wall.freeTileLevel * 1000 + index;
@@ -443,7 +451,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'keepCurrentTilesWhenFreeRoom',
     value: function keepCurrentTilesWhenFreeRoom(wall, wallIndex, currentTiles, start, done) {
-      var _this12 = this;
+      var _this13 = this;
 
       start && start();
       currentTiles.map(function (tile, index) {
@@ -453,7 +461,7 @@ var RoomScene = function (_Component) {
         tile.currentHex = tile.material.color.getHex();
         tile.maskIndex = -1 * index;
         tile.wallIndex = wallIndex;
-        _this12.addFreeTile(tile, true, true);
+        _this13.addFreeTile(tile, true, true);
       });
 
       wall.freeTileLevel++;
@@ -462,11 +470,11 @@ var RoomScene = function (_Component) {
   }, {
     key: 'resetFreeRoom',
     value: function resetFreeRoom() {
-      var _this13 = this;
+      var _this14 = this;
 
       // remove old marks
       this.maskTiles.map(function (tile) {
-        _this13.freeRoom.remove(tile);
+        _this14.freeRoom.remove(tile);
       });
       this.maskTiles = [];
     }
@@ -544,7 +552,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'addFreeTile',
     value: function addFreeTile(INTERSECTED, justAdd, notRefresh) {
-      var _this14 = this;
+      var _this15 = this;
 
       if (!INTERSECTED) {
         return;
@@ -566,7 +574,7 @@ var RoomScene = function (_Component) {
         if (duplicates.length) {
           duplicates.map(function (tile) {
             wall.removeDuplicatedFreeTiles(tile);
-            _this14.room.remove(tile);
+            _this15.room.remove(tile);
           });
 
           this.props.onTileAdded && this.props.onTileAdded(wall, false, duplicates); // wall, remove, duplicates
@@ -578,7 +586,7 @@ var RoomScene = function (_Component) {
       var mountedTiles = wall.mountFreeTile(INTERSECTED);
       mountedTiles.map(function (tile) {
         tile.maskIndex = maskIndex;
-        _this14.room.add(tile);
+        _this15.room.add(tile);
       });
 
       !notRefresh && this.refresh();
@@ -590,7 +598,7 @@ var RoomScene = function (_Component) {
   }, {
     key: 'setWallGrout',
     value: function setWallGrout(wallIndex, groutSize, groutColor, callback) {
-      var _this15 = this;
+      var _this16 = this;
 
       var wall = this.walls[wallIndex];
 
@@ -605,7 +613,7 @@ var RoomScene = function (_Component) {
       }
 
       wall.mountedTiles.map(function (tile) {
-        _this15.room.remove(tile);
+        _this16.room.remove(tile);
       });
       wall.mountedTiles = [];
 
@@ -616,7 +624,7 @@ var RoomScene = function (_Component) {
 
       wall.mount();
       wall.mountedTiles.map(function (tile) {
-        _this15.room.add(tile);
+        _this16.room.add(tile);
       });
 
       this.refresh();

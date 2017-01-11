@@ -359,6 +359,12 @@ class RoomScene extends Component {
     wall.options.selectedTile = tileIndex;
 
     if (tileIndex === null) {
+      // remove all tiles
+      wall.mountedTiles.map((tile) => {
+        this.room.remove(tile);
+      });
+      wall.mountedTiles = [];
+
       callback && callback();
       this.resetFreeRoom();
       return;
