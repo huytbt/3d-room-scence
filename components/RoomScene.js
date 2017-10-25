@@ -64,6 +64,13 @@ class RoomScene extends Component {
       this.props.perspective.viewOffset.x, this.props.perspective.viewOffset.y,
       this.width, this.height
     );
+    if (this.props.camera.target) {
+      this.camera.lookAt(new Three.Vector3(
+        this.props.camera.target.x,
+        this.props.camera.target.y,
+        this.props.camera.target.z
+      ));
+    }
 
     this.renderer = new Three.WebGLRenderer({
       preserveDrawingBuffer: true
