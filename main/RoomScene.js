@@ -233,6 +233,11 @@ var RoomScene = function (_Component) {
       }
 
       var image = new Three.Mesh(new Three.BoxGeometry(meta.width * meta.ratio, meta.height * meta.ratio, 0), new Three.MeshBasicMaterial({ map: texture, transparent: transparent, opacity: meta.opacity }));
+
+      if (meta.rotation) {
+        image.rotation.set(meta.rotation.x, meta.rotation.y, meta.rotation.z);
+      }
+
       image.position.set(meta.position.x * meta.ratio, meta.position.y * meta.ratio, meta.position.z * meta.ratio);
       this.scene.add(image);
     }

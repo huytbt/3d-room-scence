@@ -1,6 +1,6 @@
 {
   "name": "react-3d-room-scene",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "React 3D Room Scence",
   "main": "main/index.js",
   "directories": {
@@ -40,7 +40,7 @@
     "test": "mocha test/.setup.js test/**/*-test.js",
     "start": "webpack-dev-server --progress --inline --color --hot",
     "build": "rimraf main && babel ./components -d main",
-    "postpublish": "npm run build"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
